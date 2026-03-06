@@ -146,7 +146,7 @@ export const AddTransactionScreen: React.FC = () => {
         if (hasDueSupport && parsedPaid > parsedAmount) {
             Alert.alert(t('common.error'), t('transactions.errorPaidExceeds'));
             return;
-        }
+          }
 
         setIsSubmitting(true);
 
