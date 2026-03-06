@@ -62,3 +62,4 @@ export const CONTACT_TYPES = {
     SUPPLIER: 'supplier',
     BOTH: 'both',
 } as const;
+
