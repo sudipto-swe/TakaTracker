@@ -181,3 +181,34 @@ export const TransactionsScreen: React.FC = () => {
             </View>
         );
     };
+
+    const renderTransaction = ({ item }: { item: Transaction }) => {
+        const isIncome = item.type === 'sale';
+
+        return (
+            <TouchableOpacity style={styles.transactionCard} activeOpacity={0.7}>
+                <View style={[styles.typeIndicator, { backgroundColor: getTypeColor(item.type) }]} />
+                <View style={styles.transactionContent}>
+                    <View style={styles.transactionHeader}>
+                        <Text style={styles.contactName}>
+                            {item.productName || item.contactName || getTypeLabel(item.type)}
+                        </Text>
+                        <Text style={[styles.amount, { color: getTypeColor(item.type) }]}>
+                            {isIncome ? '+' : '-'}{formatCurrency(item.amount)}
+                        </Text>
+                    </View>
+                    <View style={styles.transactionFooter}>
+                        <View style={styles.typeTag}>
+                            <Text style={styles.typeText}>{getTypeLabel(item.type)}</Text>
+                        </View>
+                        <View style={styles.dateRow}>
+                            {!item.isSynced && (
+                                <Ionicons name="cloud-offline-outline" size={14} color={COLORS.warning} style={{ marginRight: 4 }} />
+                            )}
+                            <Text style={styles.dateText}>{getDateString(item.date)}</Text>
+                        </View>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        );
+    };
