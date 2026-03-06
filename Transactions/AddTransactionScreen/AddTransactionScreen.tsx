@@ -253,7 +253,7 @@ export const AddTransactionScreen: React.FC = () => {
                 successMsg += `\nবাকি: ${formatCurrency(finalDue)}`;
             }
 
-            Alert.alert(`✅ ${t('common.success')}!`, successMsg, [
+            Alert.alert(` ${t('common.success')}!`, successMsg, [
                 {
                     text: 'OK',
                     onPress: () => {
