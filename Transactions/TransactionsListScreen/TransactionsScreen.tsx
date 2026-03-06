@@ -126,3 +126,58 @@ export const TransactionsScreen: React.FC = () => {
 
         const isSelected = (day: number) =>
             selectedDate && day === selectedDate.getDate() && tempMonth === selectedDate.getMonth() && tempYear === selectedDate.getFullYear();
+          return (
+            <View>
+                {/* Month nav */}
+                <View style={calStyles.monthNav}>
+                    <TouchableOpacity onPress={() => {
+                        if (tempMonth === 0) { setTempMonth(11); setTempYear(tempYear - 1); }
+                        else setTempMonth(tempMonth - 1);
+                    }}>
+                        <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
+                    </TouchableOpacity>
+                    <Text style={calStyles.monthTitle}>{monthNames[tempMonth]} {tempYear}</Text>
+                    <TouchableOpacity onPress={() => {
+                        if (tempMonth === 11) { setTempMonth(0); setTempYear(tempYear + 1); }
+                        else setTempMonth(tempMonth + 1);
+                    }}>
+                        <Ionicons name="chevron-forward" size={24} color={COLORS.textPrimary} />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Day headers */}
+                <View style={calStyles.dayHeaderRow}>
+                    {dayNames.map((d, i) => (
+                        <Text key={i} style={calStyles.dayHeader}>{d}</Text>
+                    ))}
+                </View>
+
+                {/* Calendar grid */}
+                {rows.map((row, ri) => (
+                    <View key={ri} style={calStyles.weekRow}>
+                        {row.map((day, di) => (
+                            <TouchableOpacity
+                                key={di}
+                                style={[
+                                    calStyles.dayCell,
+                                    day ? (isToday(day) ? calStyles.todayCell : undefined) : undefined,
+                                    day ? (isSelected(day) ? calStyles.selectedCell : undefined) : undefined,
+                                ]}
+                                onPress={() => day && handleSelectDate(day)}
+                                disabled={!day}
+                            >
+                                <Text style={[
+                                    calStyles.dayText,
+                                    day ? (isToday(day) ? calStyles.todayText : undefined) : undefined,
+                                    day ? (isSelected(day) ? calStyles.selectedText : undefined) : undefined,
+                                    !day ? { color: 'transparent' } : undefined,
+                                ]}>
+                                    {day || ''}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                ))}
+            </View>
+        );
+    };
