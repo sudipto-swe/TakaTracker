@@ -498,20 +498,20 @@ export const AddTransactionScreen: React.FC = () => {
                                             styles.expenseCategoryLabel,
                                             expenseCategory === cat.key && { color: COLORS.warning, fontWeight: '600' }
                                         ]}>
-                                            {cat.label}
+                                            {cat.label }
                                         </Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
 
-                            <Text style={styles.sectionTitle}>{t('transactions.amount')}</Text>
+                            <Text style={styles.sectionTitle}>{t(' transactions.amount ')}</Text>
                             <View style={styles.amountContainer}>
-                                <Text style={styles.currencySymbol}>৳</Text>
+                                <Text style={styles.currencySymbol}> ৳ </Text>
                                 <TextInput
                                     style={styles.amountInput}
                                     value={amount}
                                     onChangeText={setAmount}
-                                    placeholder="0"
+                                    placeholder="0 "
                                     placeholderTextColor={COLORS.gray300}
                                     keyboardType="numeric"
                                     autoFocus
