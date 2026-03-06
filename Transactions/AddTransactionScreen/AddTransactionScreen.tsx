@@ -479,7 +479,7 @@ export const AddTransactionScreen: React.FC = () => {
                         </>
                     )}
 
-                    {/* ===== EXPENSE FIELDS ===== */}
+                    /* ===== EXPENSE FIELDS ===== */
                     {isExpense && (
                         <>
                             <Text style={styles.sectionTitle}>খরচের ধরন</Text>
@@ -498,20 +498,20 @@ export const AddTransactionScreen: React.FC = () => {
                                             styles.expenseCategoryLabel,
                                             expenseCategory === cat.key && { color: COLORS.warning, fontWeight: '600' }
                                         ]}>
-                                            {cat.label}
+                                            {cat.label }
                                         </Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
 
-                            <Text style={styles.sectionTitle}>{t('transactions.amount')}</Text>
+                            <Text style={styles.sectionTitle}>{t(' transactions.amount ')}</Text>
                             <View style={styles.amountContainer}>
-                                <Text style={styles.currencySymbol}>৳</Text>
+                                <Text style={styles.currencySymbol}> ৳ </Text>
                                 <TextInput
                                     style={styles.amountInput}
                                     value={amount}
                                     onChangeText={setAmount}
-                                    placeholder="0"
+                                    placeholder="0 "
                                     placeholderTextColor={COLORS.gray300}
                                     keyboardType="numeric"
                                     autoFocus
@@ -525,7 +525,7 @@ export const AddTransactionScreen: React.FC = () => {
                         <>
                             <Text style={styles.sectionTitle}>{t('transactions.paidAmountLabel')}</Text>
                             <View style={styles.amountContainer}>
-                                <Text style={[styles.currencySymbol, { fontSize: FONT_SIZES.xl }]}>৳</Text>
+                                <Text style={[styles.currencySymbol, { fontSize: FONT_SIZES.xl }]}> ৳ </Text>
                                 <TextInput
                                     style={[styles.amountInput, { fontSize: FONT_SIZES.xl }]}
                                     value={paidAmountStr}
@@ -536,7 +536,7 @@ export const AddTransactionScreen: React.FC = () => {
                                 />
                             </View>
                             {dueAmount > 0 && (
-                                <View style={styles.dueInfoRow}>
+                                <View style={ styles. dueInfoRow }>
                                     <Ionicons
                                         name={isSale ? 'arrow-down-circle' : 'arrow-up-circle'}
                                         size={20}
@@ -546,7 +546,7 @@ export const AddTransactionScreen: React.FC = () => {
                                         styles.dueInfoText,
                                         { color: isSale ? COLORS.success : COLORS.error }
                                     ]}>
-                                        {isSale ? 'পাওনা' : 'দেনা'}: ৳{dueAmount}
+                                        {isSale ? 'পাওনা' : 'দেনা'}: ৳ {dueAmount}
                                     </Text>
                                 </View>
                             )}
