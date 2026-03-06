@@ -1,5 +1,5 @@
 """
-Inventory serializers.
+Inventory serializers made.
 """
 from rest_framework import serializers
 from .models import Product, StockAdjustment
