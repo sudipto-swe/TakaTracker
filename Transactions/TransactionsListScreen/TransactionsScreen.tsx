@@ -52,3 +52,31 @@ export const TransactionsScreen: React.FC = () => {
             return matchesFilter && matchesSearch && matchesDate;
         });
     }, [transactions, activeFilter, searchQuery, selectedDate]);
+    
+     const getTypeLabel = (type: string) => {
+        const labels: Record<string, string> = {
+            sale: t('transactions.sale'),
+            purchase: t('transactions.purchase'),
+            expense: t('transactions.expense'),
+        };
+        return labels[type] || type;
+    };
+
+    const getTypeColor = (type: string) => {
+        if (type === 'sale') return COLORS.success;
+        if (type === 'purchase') return COLORS.error;
+        return COLORS.warning;
+    };
+
+    const getDateString = (date: Date) => {
+        try {
+            const d = new Date(date);
+            return d.toLocaleDateString('bn-BD', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            });
+        } catch {
+            return '';
+        }
+    };
