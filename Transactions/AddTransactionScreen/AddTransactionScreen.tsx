@@ -146,7 +146,7 @@ export const AddTransactionScreen: React.FC = () => {
         if (hasDueSupport && parsedPaid > parsedAmount) {
             Alert.alert(t('common.error'), t('transactions.errorPaidExceeds'));
             return;
-        }
+          }
 
         setIsSubmitting(true);
 
@@ -253,7 +253,7 @@ export const AddTransactionScreen: React.FC = () => {
                 successMsg += `\nবাকি: ${formatCurrency(finalDue)}`;
             }
 
-            Alert.alert(`✅ ${t('common.success')}!`, successMsg, [
+            Alert.alert(` ${t('common.success')}!`, successMsg, [
                 {
                     text: 'OK',
                     onPress: () => {
@@ -396,7 +396,7 @@ export const AddTransactionScreen: React.FC = () => {
                         </>
                     )}
 
-                    {/* ===== PURCHASE FIELDS ===== */}
+                    {/* PURCHASE FIELDS */}
                     {isPurchase && (
                         <>
                             <Text style={styles.sectionTitle}>পণ্যের নাম</Text>
