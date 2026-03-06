@@ -396,7 +396,7 @@ export const AddTransactionScreen: React.FC = () => {
                         </>
                     )}
 
-                    {/* ===== PURCHASE FIELDS ===== */}
+                    {/* PURCHASE FIELDS */}
                     {isPurchase && (
                         <>
                             <Text style={styles.sectionTitle}>পণ্যের নাম</Text>
