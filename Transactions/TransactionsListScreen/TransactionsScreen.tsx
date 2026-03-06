@@ -102,3 +102,27 @@ export const TransactionsScreen: React.FC = () => {
     const monthNames = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
         'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
     const dayNames = ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শুক্র', 'শনি'];
+
+    const renderCalendar = () => {
+        const daysInMonth = getDaysInMonth(tempYear, tempMonth);
+        const firstDay = getFirstDayOfMonth(tempYear, tempMonth);
+        const days: (number | null)[] = [];
+
+        for (let i = 0; i < firstDay; i++) days.push(null);
+        for (let i = 1; i <= daysInMonth; i++) days.push(i);
+
+        const rows: (number | null)[][] = [];
+        for (let i = 0; i < days.length; i += 7) {
+            rows.push(days.slice(i, i + 7));
+        }
+        // Pad last row
+        while (rows.length > 0 && rows[rows.length - 1].length < 7) {
+            rows[rows.length - 1].push(null);
+        }
+
+        const today = new Date();
+        const isToday = (day: number) =>
+            day === today.getDate() && tempMonth === today.getMonth() && tempYear === today.getFullYear();
+
+        const isSelected = (day: number) =>
+            selectedDate && day === selectedDate.getDate() && tempMonth === selectedDate.getMonth() && tempYear === selectedDate.getFullYear();
