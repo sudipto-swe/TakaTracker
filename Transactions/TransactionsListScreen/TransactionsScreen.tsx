@@ -52,7 +52,7 @@ export const TransactionsScreen: React.FC = () => {
             return matchesFilter && matchesSearch && matchesDate;
         });
     }, [transactions, activeFilter, searchQuery, selectedDate]);
-    
+
      const getTypeLabel = (type: string) => {
         const labels: Record<string, string> = {
             sale: t('transactions.sale'),
@@ -80,3 +80,25 @@ export const TransactionsScreen: React.FC = () => {
             return '';
         }
     };
+
+    const getDaysInMonth = (year: number, month: number) => {
+        return new Date(year, month + 1, 0).getDate();
+    };
+
+    const getFirstDayOfMonth = (year: number, month: number) => {
+        return new Date(year, month, 1).getDay();
+    };
+
+    const handleSelectDate = (day: number) => {
+        const newDate = new Date(tempYear, tempMonth, day);
+        setSelectedDate(newDate);
+        setShowDatePicker(false);
+    };
+
+    const clearDateFilter = () => {
+        setSelectedDate(null);
+    };
+
+    const monthNames = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+        'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+    const dayNames = ['রবি', 'সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শুক্র', 'শনি'];
