@@ -33,3 +33,22 @@ export const TransactionsScreen: React.FC = () => {
         { key: 'purchase', label: t('transactions.purchase') },
         { key: 'expense', label: t('transactions.expense') },
     ];
+    const filteredTransactions = useMemo(() => {
+        return transactions.filter((tx: Transaction) => {
+            const matchesFilter = activeFilter === 'all' || tx.type === activeFilter;
+            const matchesSearch = !searchQuery ||
+                (tx.contactName && tx.contactName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                (tx.productName && tx.productName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                tx.referenceNumber?.toLowerCase().includes(searchQuery.toLowerCase());
+
+            let matchesDate = true;
+            if (selectedDate) {
+                const txDate = new Date(tx.date);
+                matchesDate = txDate.getFullYear() === selectedDate.getFullYear() &&
+                    txDate.getMonth() === selectedDate.getMonth() &&
+                    txDate.getDate() === selectedDate.getDate();
+            }
+
+            return matchesFilter && matchesSearch && matchesDate;
+        });
+    }, [transactions, activeFilter, searchQuery, selectedDate]);
