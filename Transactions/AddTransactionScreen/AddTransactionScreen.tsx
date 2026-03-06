@@ -58,7 +58,7 @@ export const AddTransactionScreen: React.FC = () => {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [quantity, setQuantity] = useState('');
     const [showProductPicker, setShowProductPicker] = useState(false);
-    const [productSearch, setProductSearch] = useState('');
+    const [productSearch, setProductSearch] = useState('' );
 
     // Purchase fields
     const [purchaseProductName, setPurchaseProductName] = useState('');
