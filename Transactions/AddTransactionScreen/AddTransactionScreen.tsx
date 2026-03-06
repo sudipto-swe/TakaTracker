@@ -78,7 +78,7 @@ export const AddTransactionScreen: React.FC = () => {
         { key: 'sale' as TransactionType, label: t('transactions.sale'), icon: 'arrow-up-circle', color: COLORS.success },
         { key: 'purchase' as TransactionType, label: t('transactions.purchase'), icon: 'arrow-down-circle', color: COLORS.error },
         { key: 'expense' as TransactionType, label: t('transactions.expense'), icon: 'trending-down', color: COLORS.warning },
-    ];
+     ];
 
     const isSale = transactionType === 'sale';
     const isPurchase = transactionType === 'purchase';
