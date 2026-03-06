@@ -113,7 +113,7 @@ export const AddTransactionScreen: React.FC = () => {
         setQuantity('1');
         setShowProductPicker(false);
         setProductSearch('');
-    };
+      };
 
     const handleSubmit = async () => {
         // Validate
