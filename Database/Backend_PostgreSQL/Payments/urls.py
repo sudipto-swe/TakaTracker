@@ -12,3 +12,4 @@ urlpatterns = [
     path('', include(router.urls)),
     path('webhook/<str:gateway>/', PaymentWebhookView.as_view(), name='payment-webhook'),
 ]
+
