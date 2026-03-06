@@ -100,3 +100,16 @@ function computeTodaySummary(transactions: Transaction[]): TodaySummary {
 
     return summary;
 }
+
+/** Compute all-time net profit from all transactions */
+export function computeAllTimeProfit(transactions: Transaction[]): number {
+    let profit = 0;
+    for (const tx of transactions) {
+        if (tx.type === 'sale') {
+            profit += (tx.quantity || 0) * ((tx.unitSellPrice || 0) - (tx.unitBuyPrice || 0));
+        } else if (tx.type === 'expense') {
+            profit -= tx.amount;
+        }
+    }
+    return profit;
+}
