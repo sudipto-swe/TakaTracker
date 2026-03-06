@@ -36,7 +36,7 @@ const EXPENSE_CATEGORIES: { key: ExpenseCategory; label: string; icon: string }[
     { key: 'electricity', label: 'বিদ্যুৎ বিল', icon: 'flash' },
     { key: 'rent', label: 'দোকান ভাড়া', icon: 'home' },
     { key: 'transport', label: 'পরিবহন', icon: 'car' },
-    { key: 'others', label: 'অন্যান্য', icon: 'ellipsis-horizontal' },
+    { key: 'others', label: 'অন্যান্য', icon:  'ellipsis-horizontal' },
 ];
 
 export const AddTransactionScreen: React.FC = () => {
