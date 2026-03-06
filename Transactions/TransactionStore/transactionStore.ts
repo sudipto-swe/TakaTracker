@@ -113,3 +113,113 @@ export function computeAllTimeProfit(transactions: Transaction[]): number {
     }
     return profit;
 }
+
+/** Get daily sales totals for heatmap (last N days) */
+export function getDailySales(transactions: Transaction[], days: number = 126): Record<string, number> {
+    const result: Record<string, number> = {};
+    const now = new Date();
+
+    // Initialize all days to 0
+    for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        result[key] = 0;
+    }
+
+    for (const tx of transactions) {
+        if (tx.type !== 'sale') continue;
+        const d = new Date(tx.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        if (key in result) {
+            result[key] += tx.amount;
+        }
+    }
+
+    return result;
+}
+
+interface TransactionState {
+    transactions: Transaction[];
+    todaySummary: TodaySummary;
+    isLoading: boolean;
+
+    // Actions
+    setTransactions: (transactions: Transaction[]) => void;
+    addTransaction: (transaction: Transaction) => void;
+    updateTransaction: (id: string, updates: Partial<Transaction>) => void;
+    deleteTransaction: (id: string) => void;
+    getTransactionById: (id: string) => Transaction | undefined;
+    getTransactionsByContact: (contactId: string) => Transaction[];
+    getTransactionsByType: (type: TransactionType) => Transaction[];
+    setLoading: (loading: boolean) => void;
+}
+
+export const useTransactionStore = create<TransactionState>()(
+    persist(
+        (set, get) => ({
+            transactions: [],
+            todaySummary: {
+                totalSales: 0,
+                totalPurchases: 0,
+                totalExpenses: 0,
+                netProfit: 0,
+                receivable: 0,
+                payable: 0,
+                transactionCount: 0,
+            },
+            isLoading: false,
+
+            setTransactions: (transactions) => {
+                const todaySummary = computeTodaySummary(transactions);
+                set({ transactions, todaySummary });
+            },
+
+            addTransaction: (transaction) => {
+                const newTransactions = [transaction, ...get().transactions];
+                const todaySummary = computeTodaySummary(newTransactions);
+                set({ transactions: newTransactions, todaySummary });
+            },
+
+            updateTransaction: (id, updates) => {
+                const newTransactions = get().transactions.map(t =>
+                    (t.id === id || t.localId === id) ? { ...t, ...updates } : t
+                );
+                const todaySummary = computeTodaySummary(newTransactions);
+                set({ transactions: newTransactions, todaySummary });
+            },
+
+            deleteTransaction: (id) => {
+                const newTransactions = get().transactions.filter(t => t.id !== id && t.localId !== id);
+                const todaySummary = computeTodaySummary(newTransactions);
+                set({ transactions: newTransactions, todaySummary });
+            },
+
+            getTransactionById: (id) => {
+                return get().transactions.find(t => t.id === id || t.localId === id);
+            },
+
+            getTransactionsByContact: (contactId) => {
+                return get().transactions.filter(t => t.contactId === contactId);
+            },
+
+            getTransactionsByType: (type) => {
+                return get().transactions.filter(t => t.type === type);
+            },
+
+            setLoading: (loading) => set({ isLoading: loading }),
+        }),
+        {
+            name: 'transaction-storage',
+            storage: createJSONStorage(() => AsyncStorage),
+            partialize: (state) => ({
+                transactions: state.transactions,
+            }),
+            onRehydrateStorage: () => (state) => {
+                if (state?.transactions) {
+                    state.todaySummary = computeTodaySummary(state.transactions);
+                }
+            },
+        }
+    )
+);
