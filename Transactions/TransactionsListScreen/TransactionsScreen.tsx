@@ -212,3 +212,125 @@ export const TransactionsScreen: React.FC = () => {
             </TouchableOpacity>
         );
     };
+
+     return (
+        <SafeAreaView style={styles.container} edges={['top']}>
+            {/* Header */}
+            <View style={styles.header}>
+                <Text style={styles.title}>{t('transactions.title')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+                    {selectedDate && (
+                        <TouchableOpacity onPress={clearDateFilter} style={styles.clearDateBtn}>
+                            <Text style={styles.clearDateText}>
+                                {selectedDate.getDate()}/{selectedDate.getMonth() + 1}
+                            </Text>
+                            <Ionicons name="close-circle" size={16} color={COLORS.error} />
+                        </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                        style={[styles.filterButton, selectedDate && { backgroundColor: COLORS.primary + '15' }]}
+                        onPress={() => setShowDatePicker(true)}
+                    >
+                        <Ionicons
+                            name="calendar-outline"
+                            size={24}
+                            color={selectedDate ? COLORS.primary : COLORS.textPrimary}
+                        />
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            {/* Search */}
+            <View style={styles.searchContainer}>
+                <Ionicons name="search" size={20} color={COLORS.gray400} />
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder={t('common.search')}
+                    placeholderTextColor={COLORS.gray400}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                />
+            </View>
+
+            {/* Filter Tabs */}
+            <View style={styles.filterTabs}>
+                <FlatList
+                    data={TRANSACTION_FILTERS}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(item) => item.key}
+                    contentContainerStyle={styles.filterTabsContent}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            style={[
+                                styles.filterTab,
+                                activeFilter === item.key && styles.filterTabActive,
+                            ]}
+                            onPress={() => setActiveFilter(item.key)}
+                        >
+                            <Text style={[
+                                styles.filterTabText,
+                                activeFilter === item.key && styles.filterTabTextActive,
+                            ]}>
+                                {item.label}
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                />
+            </View>
+            
+            {/* Transactions List */}
+            <FlatList
+                data={filteredTransactions}
+                keyExtractor={(item) => item.id}
+                renderItem={renderTransaction}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+                ListEmptyComponent={
+                    <View style={styles.emptyState}>
+                        <Ionicons name="receipt-outline" size={64} color={COLORS.gray300} />
+                        <Text style={styles.emptyText}>
+                            {selectedDate
+                                ? 'এই তারিখে কোনো লেনদেন নেই'
+                                : t('dashboard.noTransactions')}
+                        </Text>
+                    </View>
+                }
+            />
+
+            {/* Date Picker Modal */}
+            <Modal visible={showDatePicker} animationType="fade" transparent>
+                <View style={calStyles.overlay}>
+                    <View style={calStyles.modal}>
+                        <View style={calStyles.header}>
+                            <Text style={calStyles.headerTitle}>তারিখ নির্বাচন করুন</Text>
+                            <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                                <Ionicons name="close" size={24} color={COLORS.textPrimary} />
+                            </TouchableOpacity>
+                        </View>
+                        {renderCalendar()}
+                        <View style={calStyles.footer}>
+                            <TouchableOpacity
+                                style={calStyles.todayBtn}
+                                onPress={() => {
+                                    const today = new Date();
+                                    setTempYear(today.getFullYear());
+                                    setTempMonth(today.getMonth());
+                                    handleSelectDate(today.getDate());
+                                }}
+                            >
+                                <Text style={calStyles.todayBtnText}>আজকে</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={calStyles.clearBtn}
+                                onPress={() => { clearDateFilter(); setShowDatePicker(false); }}
+                            >
+                                <Text style={calStyles.clearBtnText}>ফিল্টার মুছুন</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+        </SafeAreaView>
+    );
+};
