@@ -334,3 +334,99 @@ export const TransactionsScreen: React.FC = () => {
         </SafeAreaView>
     );
 };
+
+
+const calStyles = StyleSheet.create({
+    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
+    modal: {
+        backgroundColor: COLORS.white, borderRadius: BORDER_RADIUS.xl,
+        padding: SPACING.lg, width: '90%', maxWidth: 400,
+    },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.md },
+    headerTitle: { fontSize: FONT_SIZES.lg, fontWeight: 'bold', color: COLORS.textPrimary },
+    monthNav: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.md },
+    monthTitle: { fontSize: FONT_SIZES.md, fontWeight: '600', color: COLORS.textPrimary },
+    dayHeaderRow: { flexDirection: 'row', marginBottom: SPACING.xs },
+    dayHeader: {
+        flex: 1, textAlign: 'center', fontSize: FONT_SIZES.xs, fontWeight: '600',
+        color: COLORS.textSecondary, paddingVertical: SPACING.xs,
+    },
+    weekRow: { flexDirection: 'row' },
+    dayCell: {
+        flex: 1, alignItems: 'center', justifyContent: 'center',
+        paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.full,
+    },
+    dayText: { fontSize: FONT_SIZES.base, color: COLORS.textPrimary },
+    todayCell: { backgroundColor: COLORS.primary + '15' },
+    todayText: { color: COLORS.primary, fontWeight: '600' },
+    selectedCell: { backgroundColor: COLORS.primary },
+    selectedText: { color: COLORS.white, fontWeight: '600' },
+    footer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: SPACING.md, gap: SPACING.md },
+    todayBtn: {
+        flex: 1, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.md,
+        backgroundColor: COLORS.primary, alignItems: 'center',
+    },
+    todayBtnText: { color: COLORS.white, fontWeight: '600', fontSize: FONT_SIZES.sm },
+    clearBtn: {
+        flex: 1, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.md,
+        backgroundColor: COLORS.gray100, alignItems: 'center',
+    },
+    clearBtnText: { color: COLORS.textSecondary, fontWeight: '600', fontSize: FONT_SIZES.sm },
+});
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: COLORS.background },
+    header: {
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md, backgroundColor: COLORS.white,
+    },
+    title: { fontSize: FONT_SIZES.xl, fontWeight: 'bold', color: COLORS.textPrimary },
+    filterButton: { padding: SPACING.xs, borderRadius: BORDER_RADIUS.md },
+    clearDateBtn: {
+        flexDirection: 'row', alignItems: 'center', gap: 4,
+        backgroundColor: COLORS.primary + '15', paddingHorizontal: SPACING.sm,
+        paddingVertical: SPACING.xs, borderRadius: BORDER_RADIUS.full,
+    },
+    clearDateText: { fontSize: FONT_SIZES.sm, color: COLORS.primary, fontWeight: '600' },
+    searchContainer: {
+        flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white,
+        marginHorizontal: SPACING.lg, marginVertical: SPACING.md,
+        paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
+        borderRadius: BORDER_RADIUS.md, borderWidth: 1, borderColor: COLORS.gray200,
+    },
+    searchInput: { flex: 1, marginLeft: SPACING.sm, fontSize: FONT_SIZES.base, color: COLORS.textPrimary },
+    filterTabs: {
+        backgroundColor: COLORS.white, paddingBottom: SPACING.sm,
+        borderBottomWidth: 1, borderBottomColor: COLORS.gray100,
+    },
+    filterTabsContent: { paddingHorizontal: SPACING.lg, gap: SPACING.sm },
+    filterTab: {
+        paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
+        borderRadius: BORDER_RADIUS.full, backgroundColor: COLORS.gray100,
+    },
+    filterTabActive: { backgroundColor: COLORS.primary },
+    filterTabText: { fontSize: FONT_SIZES.sm, fontWeight: '500', color: COLORS.textSecondary },
+    filterTabTextActive: { color: COLORS.white },
+    listContent: { padding: SPACING.lg, paddingBottom: 20 },
+    transactionCard: {
+        flexDirection: 'row', backgroundColor: COLORS.white, borderRadius: BORDER_RADIUS.md,
+        marginBottom: SPACING.sm, overflow: 'hidden', ...SHADOWS.sm,
+    },
+    typeIndicator: { width: 4 },
+    transactionContent: { flex: 1, padding: SPACING.md },
+    transactionHeader: {
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.xs,
+    },
+    contactName: { fontSize: FONT_SIZES.base, fontWeight: '600', color: COLORS.textPrimary, flex: 1 },
+    amount: { fontSize: FONT_SIZES.md, fontWeight: 'bold' },
+    transactionFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    typeTag: {
+        backgroundColor: COLORS.gray100, paddingHorizontal: SPACING.sm,
+        paddingVertical: 2, borderRadius: BORDER_RADIUS.sm,
+    },
+    typeText: { fontSize: FONT_SIZES.xs, color: COLORS.textSecondary },
+    dateRow: { flexDirection: 'row', alignItems: 'center' },
+    dateText: { fontSize: FONT_SIZES.xs, color: COLORS.textMuted },
+    emptyState: { alignItems: 'center', paddingTop: SPACING['3xl'] },
+    emptyText: { fontSize: FONT_SIZES.base, color: COLORS.textMuted, marginTop: SPACING.md, textAlign: 'center' },
+});
