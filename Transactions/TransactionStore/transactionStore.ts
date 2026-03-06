@@ -22,3 +22,25 @@ export interface Transaction {
     referenceNumber: string;
     contactId?: string;
     contactName?: string;
+    // Product details (for sale and purchase)
+    productId?: string;
+    productName?: string;
+    quantity?: number;
+    unitBuyPrice?: number;
+    unitSellPrice?: number;
+    unit?: string;
+    // Expense details
+    expenseCategory?: ExpenseCategory;
+    // Amounts
+    amount: number;
+    paidAmount: number;
+    dueAmount: number;
+    discount: number;
+    notes?: string;
+    paymentMethod?: 'cash' | 'bkash' | 'nagad' | 'rocket' | 'bank';
+    date: Date;
+    isSynced: boolean;
+    syncedAt?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
