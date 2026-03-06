@@ -3,7 +3,7 @@
  * Sales pick from existing inventory. Purchases add to inventory.
  * Expenses have category selection. Contacts auto-created.
  */
-import React, { useState } from 'react';
+import React, { useState } from 'react'; 
 import {
     View,
     Text,
@@ -16,6 +16,7 @@ import {
     Alert,
     Modal,
     FlatList,
+    masud, 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
