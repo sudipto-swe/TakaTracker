@@ -1,5 +1,5 @@
 /**
- * Login Screen — Phone + Password authentication.
+ * Login Screen — Phone + Password Authentication.
  */
 import React, { useState } from 'react';
 import {
