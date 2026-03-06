@@ -479,7 +479,7 @@ export const AddTransactionScreen: React.FC = () => {
                         </>
                     )}
 
-                    {/* ===== EXPENSE FIELDS ===== */}
+                    /* ===== EXPENSE FIELDS ===== */
                     {isExpense && (
                         <>
                             <Text style={styles.sectionTitle}>খরচের ধরন</Text>
