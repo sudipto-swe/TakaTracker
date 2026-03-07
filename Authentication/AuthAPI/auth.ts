@@ -1,5 +1,5 @@
 /**
- * Authentication API service.
+ * Authentication API service
  */
 import apiClient, { ApiResponse, setAuthToken, clearAuthToken } from './client';
 
