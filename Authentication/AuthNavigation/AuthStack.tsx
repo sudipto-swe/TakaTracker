@@ -1,5 +1,5 @@
 /**
- * Auth Stack Navigator for login/registration/password flow.
+ * Auth Stack Navigator for login/registration/password .
  */
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
