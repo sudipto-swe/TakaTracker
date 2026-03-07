@@ -48,7 +48,7 @@ export const LoginScreen: React.FC = () => {
         setIsLoading(true);
         setError('');
 
-        // Simulate network delay
+        // Simulate Network delay
         setTimeout(() => {
             const result = loginUser(cleanPhone, password);
             setIsLoading(false);
