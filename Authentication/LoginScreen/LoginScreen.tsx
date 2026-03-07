@@ -128,7 +128,7 @@ export const LoginScreen: React.FC = () => {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Forgot Password */}
+                    {/* Forgot the Password */}
                     <TouchableOpacity
                         style={styles.forgotPassword}
                         onPress={() => navigation.navigate('ForgotPassword')}
