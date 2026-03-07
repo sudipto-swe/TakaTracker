@@ -1,5 +1,5 @@
 /**
- * Register Screen — Sign up with name, business, phone, and password.
+ * Register Screen —> Sign up with name, business, phone, and password.
  */
 import React, { useState } from 'react';
 import {
