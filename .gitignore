@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.expo/
+dist/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.env
+*.egg-info/
+.eggs/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+*.apk
+*.aab
+*.ipa
+build/
+
+# Secrets
+.env.local
+.env.production
+secrets/
