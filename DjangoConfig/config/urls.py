@@ -1,5 +1,5 @@
 """
-URL configuration for TakaTracker project.
+URL configuration for TakaTracker App.
 """
 from django.contrib import admin
 from django.urls import path, include
