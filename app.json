@@ -1,0 +1,7 @@
+Configure Expo app settings for TakaTracker
+
+- Set app name to "টাকাট্র্যাকার" with slug "takatracker"
+- Configure iOS and Android platform-specific settings
+- Enable new architecture and edge-to-edge on Android
+- Add required permissions for camera and storage access
+- Set up EAS project configuration
