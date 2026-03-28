@@ -113,3 +113,102 @@ class BackgroundSyncService {
 
         return result;
     }
+
+    /**
+     * Push unsynced data from Zustand stores to server.
+     */
+    private async pushLocalChanges(): Promise<{ count: number; errors: string[] }> {
+        const errors: string[] = [];
+        let count = 0;
+
+        try {
+            const { transactions } = useTransactionStore.getState();
+            const { contacts } = useContactStore.getState();
+            const { products } = useInventoryStore.getState();
+
+            // Collect unsynced items
+            const unsyncedContacts = contacts
+                .filter(c => !c.isSynced)
+                .map(c => ({
+                    local_id: c.localId,
+                    contact_type: c.type,
+                    name: c.name,
+                    phone: c.phone || '',
+                    address: c.address || '',
+                    balance: c.balance,
+                    credit_limit: c.creditLimit,
+                    notes: c.notes || '',
+                }));
+
+            const unsyncedTransactions = transactions
+                .filter(t => !t.isSynced)
+                .map(t => ({
+                    local_id: t.localId,
+                    transaction_type: t.type,
+                    reference_number: t.referenceNumber,
+                    total_amount: t.amount,
+                    paid_amount: t.paidAmount,
+                    discount: t.discount,
+                    notes: t.notes || '',
+                    payment_mode: t.paymentMethod || 'cash',
+                    transaction_date: new Date(t.date).toISOString().split('T')[0],
+                    category: t.expenseCategory || '',
+                    expense_category: t.expenseCategory || '',
+                    // Product details
+                    items: t.productName ? [{
+                        name: t.productName,
+                        quantity: t.quantity || 1,
+                        unit: t.unit || 'pcs',
+                        unit_price: t.type === 'purchase' ? (t.unitBuyPrice || 0) : (t.unitSellPrice || 0),
+                        total: t.amount,
+                    }] : [],
+                }));
+
+            const unsyncedProducts = products
+                .filter(p => !(p as any).isSynced)
+                .map(p => ({
+                    local_id: p.id,
+                    name: p.name,
+                    sku: p.sku,
+                    category: p.category,
+                    purchase_price: p.purchasePrice,
+                    selling_price: p.sellingPrice,
+                    stock_quantity: p.stock,
+                    unit: p.unit,
+                    low_stock_threshold: p.lowStock,
+                }));
+
+            const totalUnsynced = unsyncedContacts.length + unsyncedTransactions.length + unsyncedProducts.length;
+
+            if (totalUnsynced > 0) {
+                const response = await syncAPI.push({
+                    contacts: unsyncedContacts,
+                    transactions: unsyncedTransactions,
+                    products: unsyncedProducts,
+                });
+
+                if (response.success) {
+                    count = totalUnsynced;
+
+                    // Mark items as synced in stores
+                    const txStore = useTransactionStore.getState();
+                    for (const t of transactions.filter(t => !t.isSynced)) {
+                        txStore.updateTransaction(t.id, { isSynced: true, syncedAt: Date.now() } as any);
+                    }
+
+                    // Mark contacts as synced
+                    const ctStore = useContactStore.getState();
+                    for (const c of contacts.filter(c => !c.isSynced)) {
+                        ctStore.updateContact(c.id, { isSynced: true, syncedAt: Date.now() });
+                    }
+                    console.log(`[Sync] Pushed ${count} items`);
+                } else {
+                    errors.push(`Push failed: ${response.error}`);
+                }
+            }
+        } catch (error) {
+            errors.push(`Push error: ${(error as Error).message}`);
+        }
+
+        return { count, errors };
+    }
