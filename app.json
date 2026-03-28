@@ -1,7 +1,51 @@
-Configure Expo app settings for TakaTracker
-
-- Set app name to "টাকাট্র্যাকার" with slug "takatracker"
-- Configure iOS and Android platform-specific settings
-- Enable new architecture and edge-to-edge on Android
-- Add required permissions for camera and storage access
-- Set up EAS project configuration
+{
+  "expo": {
+    "name": "টাকাট্র্যাকার",
+    "slug": "takatracker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "takatracker",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#EAECF0"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.takatracker.app",
+      "buildNumber": "1"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#EAECF0"
+      },
+      "edgeToEdgeEnabled": false,
+      "package": "com.takatracker.app",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7ea3c3ad-edab-46f0-8be9-ceb0db78a939"
+      }
+    },
+    "owner": "sudiptoswe"
+  }
+}
