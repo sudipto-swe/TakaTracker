@@ -1,0 +1,162 @@
+/**
+ * Transaction Flow E2E Tests
+ * Tests creating, viewing, and managing transactions.
+ */
+import { by, device, element, expect, waitFor } from 'detox';
+
+describe('Transaction Management', () => {
+    beforeAll(async () => {
+        await device.launchApp({
+            newInstance: true,
+            launchArgs: { detoxUserLoggedIn: true }
+        });
+    });
+
+    beforeEach(async () => {
+        await device.reloadReactNative();
+    });
+
+    describe('Transaction List', () => {
+        it('should display transactions tab', async () => {
+            await element(by.id('tab-transactions')).tap();
+            await expect(element(by.id('transactions-screen'))).toBeVisible();
+        });
+
+        it('should show filter options', async () => {
+            await element(by.id('tab-transactions')).tap();
+
+            await expect(element(by.id('filter-all'))).toBeVisible();
+            await expect(element(by.id('filter-sales'))).toBeVisible();
+            await expect(element(by.id('filter-purchases'))).toBeVisible();
+        });
+
+        it('should filter transactions by type', async () => {
+            await element(by.id('tab-transactions')).tap();
+            await element(by.id('filter-sales')).tap();
+
+            // Only sales should be visible
+            // Check that filter is active
+            await expect(element(by.id('filter-sales'))).toHaveLabel('active');
+        });
+
+        it('should search transactions', async () => {
+            await element(by.id('tab-transactions')).tap();
+            await element(by.id('search-input')).typeText('Test');
+
+            // Should show filtered results
+            await waitFor(element(by.id('transaction-list')))
+                .toBeVisible()
+                .withTimeout(3000);
+        });
+    });
+
+    describe('Add Transaction', () => {
+        beforeEach(async () => {
+            // Navigate to Add Transaction
+            await element(by.id('tab-add')).tap();
+        });
+
+        it('should display transaction type selection', async () => {
+            await expect(element(by.id('add-transaction-screen'))).toBeVisible();
+            await expect(element(by.id('type-sale'))).toBeVisible();
+            await expect(element(by.id('type-purchase'))).toBeVisible();
+            await expect(element(by.id('type-expense'))).toBeVisible();
+        });
+
+        it('should create a sale transaction', async () => {
+            // Select sale type
+            await element(by.id('type-sale')).tap();
+
+            // Enter amount
+            await element(by.id('amount-input')).typeText('1500');
+
+            // Add notes
+            await element(by.id('notes-input')).typeText('টেস্ট বিক্রয়');
+
+            // Save transaction
+            await element(by.id('save-transaction-button')).tap();
+
+            // Should show success message
+            await expect(element(by.text('লেনদেন সংরক্ষিত হয়েছে'))).toBeVisible();
+        });
+
+        it('should require amount field', async () => {
+            await element(by.id('type-sale')).tap();
+            await element(by.id('save-transaction-button')).tap();
+
+            await expect(element(by.text('পরিমাণ দিন'))).toBeVisible();
+        });
+
+        it('should allow selecting a contact', async () => {
+            await element(by.id('type-sale')).tap();
+            await element(by.id('select-contact-button')).tap();
+
+            // Contact picker should open
+            await expect(element(by.id('contact-picker-modal'))).toBeVisible();
+        });
+
+        it('should calculate due amount', async () => {
+            await element(by.id('type-sale')).tap();
+            await element(by.id('amount-input')).typeText('1000');
+            await element(by.id('paid-amount-input')).typeText('600');
+
+            // Due amount should show 400
+            await expect(element(by.id('due-amount'))).toHaveText('৳400');
+        });
+    });
+
+    describe('Transaction Detail', () => {
+        it('should open transaction detail on tap', async () => {
+            await element(by.id('tab-transactions')).tap();
+
+            // Tap first transaction
+            await element(by.id('transaction-item-0')).tap();
+
+            await expect(element(by.id('transaction-detail-screen'))).toBeVisible();
+        });
+
+        it('should display transaction information', async () => {
+            await element(by.id('tab-transactions')).tap();
+            await element(by.id('transaction-item-0')).tap();
+
+            await expect(element(by.id('transaction-amount'))).toBeVisible();
+            await expect(element(by.id('transaction-date'))).toBeVisible();
+            await expect(element(by.id('transaction-type'))).toBeVisible();
+        });
+    });
+});
+
+describe('Offline Transaction', () => {
+    beforeAll(async () => {
+        await device.launchApp({
+            newInstance: true,
+            launchArgs: { detoxUserLoggedIn: true }
+        });
+    });
+
+    it('should save transaction when offline', async () => {
+        // Put device in airplane mode (simulated)
+        await device.setStatusBar({ networkStatus: 'offline' });
+
+        await element(by.id('tab-add')).tap();
+        await element(by.id('type-sale')).tap();
+        await element(by.id('amount-input')).typeText('500');
+        await element(by.id('save-transaction-button')).tap();
+
+        // Should save locally
+        await expect(element(by.text('লেনদেন সংরক্ষিত হয়েছে'))).toBeVisible();
+
+        // Should show sync pending indicator
+        await expect(element(by.id('sync-pending-badge'))).toBeVisible();
+
+        // Restore network
+        await device.setStatusBar({ networkStatus: 'online' });
+    });
+
+    it('should sync transaction when back online', async () => {
+        // Wait for auto-sync
+        await waitFor(element(by.id('sync-complete-indicator')))
+            .toBeVisible()
+            .withTimeout(10000);
+    });
+});
