@@ -23,3 +23,58 @@ export const isValidBDPhone = (phone: string): boolean => {
 
     return false;
 };
+
+/**
+ * Format phone number for display.
+ */
+export const formatPhoneNumber = (phone: string): string => {
+    const cleaned = phone.replace(/\D/g, '');
+
+    if (cleaned.length === 11) {
+        return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 7)} ${cleaned.slice(7)}`;
+    }
+
+    if (cleaned.length === 13 && cleaned.startsWith('880')) {
+        return `+880 ${cleaned.slice(3, 5)} ${cleaned.slice(5, 9)} ${cleaned.slice(9)}`;
+    }
+
+    return phone;
+};
+
+/**
+ * Validate email address.
+ */
+export const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
+
+/**
+ * Validate positive number.
+ */
+export const isPositiveNumber = (value: string | number): boolean => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return !isNaN(num) && num > 0;
+};
+
+/**
+ * Validate non-negative number (including zero).
+ */
+export const isNonNegativeNumber = (value: string | number): boolean => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return !isNaN(num) && num >= 0;
+};
+
+/**
+ * Check if string is empty or whitespace only.
+ */
+export const isEmpty = (value: string | null | undefined): boolean => {
+    return !value || value.trim().length === 0;
+};
+
+/**
+ * Sanitize string input.
+ */
+export const sanitize = (value: string): string => {
+    return value.trim().replace(/\s+/g, ' ');
+};
