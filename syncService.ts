@@ -56,3 +56,60 @@ class BackgroundSyncService {
             this.syncInterval = null;
         }
     }
+
+    /**
+     * Full sync: push → pull.
+     */
+    async triggerSync(): Promise<SyncResult> {
+        const result: SyncResult = {
+            success: false,
+            itemsPushed: 0,
+            itemsPulled: 0,
+            errors: [],
+        };
+
+        if (this._isSyncing) {
+            result.errors.push('Sync already in progress');
+            return result;
+        }
+
+        const { isAuthenticated } = useAuthStore.getState();
+        if (!isAuthenticated) {
+            result.errors.push('Not authenticated');
+            return result;
+        }
+
+        try {
+            this._isSyncing = true;
+            useSyncStore.getState().setSyncing(true);
+            console.log('[Sync] Starting sync...');
+
+            // Step 1: Push local changes
+            const pushResult = await this.pushLocalChanges();
+            result.itemsPushed = pushResult.count;
+            result.errors.push(...pushResult.errors);
+
+            // Step 2: Pull server changes
+            const pullResult = await this.pullServerChanges();
+            result.itemsPulled = pullResult.count;
+            result.errors.push(...pullResult.errors);
+
+            // Save timestamp
+            const now = new Date().toISOString();
+            await AsyncStorage.setItem(LAST_SYNC_KEY, now);
+            this._lastSyncAt = now;
+            result.syncedAt = now;
+            useSyncStore.getState().setLastSync(now);
+
+            result.success = result.errors.length === 0;
+            console.log(`[Sync] Done: ${result.itemsPushed} pushed, ${result.itemsPulled} pulled`);
+        } catch (error) {
+            console.error('[Sync] Error:', error);
+            result.errors.push((error as Error).message);
+        } finally {
+            this._isSyncing = false;
+            useSyncStore.getState().setSyncing(false);
+        }
+
+        return result;
+    }
