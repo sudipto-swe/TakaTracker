@@ -256,3 +256,21 @@ class SyncPushView(APIView):
         
         return {'success': True}
 
+
+class SyncStatusView(APIView):
+    """Get sync status for the current user."""
+    
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        merchant = request.user.get_merchant()
+        
+        return Response({
+            'success': True,
+            'last_sync_at': request.user.last_sync_at,
+            'counts': {
+                'contacts': Contact.objects.filter(merchant=merchant, is_deleted=False).count(),
+                'transactions': Transaction.objects.filter(merchant=merchant, is_deleted=False).count(),
+                'products': Product.objects.filter(merchant=merchant, is_deleted=False).count(),
+            }
+        })
