@@ -216,4 +216,43 @@ class SyncPushView(APIView):
         
         return {'success': True}
     
-    
+    def _sync_product(self, merchant, data):
+        """Sync a single product using last-write-wins."""
+        local_id = data.get('local_id')
+        server_id = data.get('id')
+        
+        existing = None
+        if server_id:
+            try:
+                existing = Product.objects.get(id=server_id, merchant=merchant)
+            except Product.DoesNotExist:
+                pass
+        elif local_id:
+            existing = Product.objects.filter(merchant=merchant, local_id=local_id).first()
+        
+        if existing:
+            client_updated = data.get('updated_at')
+            if client_updated and existing.updated_at > client_updated:
+                return {
+                    'conflict': {
+                        'model': 'product',
+                        'local_id': local_id,
+                        'server_data': SyncProductSerializer(existing).data,
+                        'client_data': data,
+                        'conflict_type': 'update'
+                    }
+                }
+            
+            for key, value in data.items():
+                if key not in ['id', 'merchant', 'created_at']:
+                    setattr(existing, key, value)
+            existing.synced_at = timezone.now()
+            existing.save()
+        else:
+            data.pop('id', None)
+            data['merchant'] = merchant
+            data['synced_at'] = timezone.now()
+            Product.objects.create(**data)
+        
+        return {'success': True}
+
