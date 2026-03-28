@@ -32,3 +32,22 @@ interface SyncStatusResponse {
         products: number;
     };
 }
+
+export const syncService = {
+    /**
+     * Pull data from server.
+     */
+    pull: async (params?: {
+        last_sync_at?: string;
+        models?: ('contacts' | 'transactions' | 'products')[];
+    }): Promise<ApiResponse<SyncPullResponse>> => {
+        try {
+            const response = await apiClient.post('/sync/pull/', params || {});
+            return { success: true, data: response.data };
+        } catch (error: any) {
+            return {
+                success: false,
+                error: error.response?.data?.error || 'Failed to pull data',
+            };
+        }
+    },
