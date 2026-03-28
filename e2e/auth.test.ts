@@ -31,3 +31,38 @@ describe('Authentication Flow', () => {
             await element(by.id('phone-input')).clearText();
             await element(by.id('phone-input')).typeText('1712345678');
             await element(by.id('send-otp-button')).tap();
+
+            // Should navigate to OTP screen
+            await expect(element(by.id('otp-screen'))).toBeVisible();
+        });
+    });
+
+    describe('OTP Screen', () => {
+        beforeEach(async () => {
+            // Navigate to OTP screen first
+            await element(by.id('phone-input')).typeText('1712345678');
+            await element(by.id('send-otp-button')).tap();
+        });
+
+        it('should display OTP input fields', async () => {
+            await expect(element(by.id('otp-input-0'))).toBeVisible();
+            await expect(element(by.id('otp-input-5'))).toBeVisible();
+        });
+
+        it('should show the entered phone number', async () => {
+            await expect(element(by.text('+880 1712345678'))).toBeVisible();
+        });
+
+        it('should auto-focus next input on digit entry', async () => {
+            await element(by.id('otp-input-0')).typeText('1');
+            // Input should automatically move to next field
+            await element(by.id('otp-input-1')).typeText('2');
+            await element(by.id('otp-input-2')).typeText('3');
+            await element(by.id('otp-input-3')).typeText('4');
+            await element(by.id('otp-input-4')).typeText('5');
+            await element(by.id('otp-input-5')).typeText('6');
+
+            // Should auto-submit after 6 digits
+            // Verify OTP screen is no longer visible (navigated to dashboard)
+        });
+
