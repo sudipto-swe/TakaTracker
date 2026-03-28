@@ -49,3 +49,58 @@ describe('Transaction Management', () => {
                 .withTimeout(3000);
         });
     });
+
+    describe('Add Transaction', () => {
+        beforeEach(async () => {
+            // Navigate to Add Transaction
+            await element(by.id('tab-add')).tap();
+        });
+
+        it('should display transaction type selection', async () => {
+            await expect(element(by.id('add-transaction-screen'))).toBeVisible();
+            await expect(element(by.id('type-sale'))).toBeVisible();
+            await expect(element(by.id('type-purchase'))).toBeVisible();
+            await expect(element(by.id('type-expense'))).toBeVisible();
+        });
+
+        it('should create a sale transaction', async () => {
+            // Select sale type
+            await element(by.id('type-sale')).tap();
+
+            // Enter amount
+            await element(by.id('amount-input')).typeText('1500');
+
+            // Add notes
+            await element(by.id('notes-input')).typeText('টেস্ট বিক্রয়');
+
+            // Save transaction
+            await element(by.id('save-transaction-button')).tap();
+
+            // Should show success message
+            await expect(element(by.text('লেনদেন সংরক্ষিত হয়েছে'))).toBeVisible();
+        });
+
+        it('should require amount field', async () => {
+            await element(by.id('type-sale')).tap();
+            await element(by.id('save-transaction-button')).tap();
+
+            await expect(element(by.text('পরিমাণ দিন'))).toBeVisible();
+        });
+
+        it('should allow selecting a contact', async () => {
+            await element(by.id('type-sale')).tap();
+            await element(by.id('select-contact-button')).tap();
+
+            // Contact picker should open
+            await expect(element(by.id('contact-picker-modal'))).toBeVisible();
+        });
+
+        it('should calculate due amount', async () => {
+            await element(by.id('type-sale')).tap();
+            await element(by.id('amount-input')).typeText('1000');
+            await element(by.id('paid-amount-input')).typeText('600');
+
+            // Due amount should show 400
+            await expect(element(by.id('due-amount'))).toHaveText('৳400');
+        });
+    });
