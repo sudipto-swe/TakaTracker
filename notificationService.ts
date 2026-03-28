@@ -72,3 +72,72 @@ export function filterByFrequency(contacts: OverdueContact[], frequency: Reminde
         case 'monthly': return contacts.filter(c => c.daysSinceOldestDue >= 30);
     }
 }
+
+/**
+ * Build a detailed Bangla notification message for a single overdue contact.
+ */
+export function buildNotificationDetail(overdue: OverdueContact): string {
+    const { contact, totalDue, unpaidTransactions } = overdue;
+
+    const lines: string[] = [
+        `${contact.name}${contact.phone ? ` (${contact.phone})` : ''}`,
+        `মোট বাকি: ${formatCurrency(totalDue)}`,
+        ``,
+        `বিস্তারিত হিসাব:`,
+    ];
+
+    unpaidTransactions.forEach((tx, idx) => {
+        const dateStr = formatDate(tx.date);
+        const product = tx.productName || 'পণ্য';
+        const qty = tx.quantity ? ` — ${tx.quantity} ${tx.unit || 'পিস'}` : '';
+
+        lines.push(`${idx + 1}. ${dateStr} — ${product}${qty}`);
+        lines.push(`   মোট: ${formatCurrency(tx.amount)} | পরিশোধ: ${formatCurrency(tx.paidAmount)} | বাকি: ${formatCurrency(tx.dueAmount)}`);
+    });
+
+    lines.push(``);
+    lines.push(`সর্বমোট বাকি: ${formatCurrency(totalDue)}`);
+
+    return lines.join('\n');
+}
+
+/**
+ * Generate fresh notifications from current transaction data.
+ * Call this on app open, after adding a transaction, or on pull-to-refresh.
+ */
+export function refreshNotifications(): void {
+    const store = useNotificationStore.getState();
+    if (!store.isEnabled) return;
+
+    const overdueContacts = getOverdueContacts(store.minDueAmount);
+    const filtered = filterByFrequency(overdueContacts, store.frequency);
+
+    // Preserve read status from existing notifications
+    const existingMap = new Map(store.notifications.map(n => [n.contactId, n]));
+
+    const notifications: DueNotification[] = filtered.map(overdue => {
+        const existing = existingMap.get(overdue.contact.id);
+        return {
+            id: `notif_${overdue.contact.id}`,
+            contactId: overdue.contact.id,
+            contactName: overdue.contact.name,
+            contactPhone: overdue.contact.phone,
+            totalDue: overdue.totalDue,
+            transactionCount: overdue.unpaidTransactions.length,
+            oldestDueDate: overdue.oldestDueDate.toISOString(),
+            daysSinceOldest: overdue.daysSinceOldestDue,
+            isRead: existing ? existing.isRead && existing.totalDue === overdue.totalDue : false,
+            createdAt: existing?.createdAt || new Date().toISOString(),
+        };
+    });
+
+    store.setNotifications(notifications);
+    store.setLastChecked(new Date().toISOString());
+}
+
+/**
+ * Get the unread notification count (for badge).
+ */
+export function getUnreadCount(): number {
+    return useNotificationStore.getState().unreadCount;
+}
