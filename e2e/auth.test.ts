@@ -66,3 +66,45 @@ describe('Authentication Flow', () => {
             // Verify OTP screen is no longer visible (navigated to dashboard)
         });
 
+
+        it('should show resend button after countdown', async () => {
+            // Wait for countdown to complete (in test, we might skip this)
+            await waitFor(element(by.id('resend-otp-button')))
+                .toBeVisible()
+                .withTimeout(65000);
+        });
+    });
+});
+
+describe('Dashboard', () => {
+    beforeAll(async () => {
+        // Assume user is already logged in for these tests
+        await device.launchApp({
+            newInstance: true,
+            launchArgs: { detoxUserLoggedIn: true }
+        });
+    });
+
+    it('should display the dashboard with summary cards', async () => {
+        await expect(element(by.id('dashboard-screen'))).toBeVisible();
+        await expect(element(by.id('summary-sales-card'))).toBeVisible();
+        await expect(element(by.id('summary-receivable-card'))).toBeVisible();
+    });
+
+    it('should show quick action buttons', async () => {
+        await expect(element(by.id('quick-action-sale'))).toBeVisible();
+        await expect(element(by.id('quick-action-purchase'))).toBeVisible();
+        await expect(element(by.id('quick-action-expense'))).toBeVisible();
+    });
+
+    it('should navigate to Add Transaction on quick action tap', async () => {
+        await element(by.id('quick-action-sale')).tap();
+
+        await expect(element(by.id('add-transaction-screen'))).toBeVisible();
+        await expect(element(by.text('বিক্রয়'))).toBeVisible();
+    });
+
+    it('should display recent transactions', async () => {
+        await expect(element(by.id('recent-transactions-section'))).toBeVisible();
+    });
+});
