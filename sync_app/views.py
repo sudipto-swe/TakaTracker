@@ -164,4 +164,56 @@ class SyncPushView(APIView):
         
         return {'success': True}
     
+    def _sync_transaction(self, merchant, user, data):
+        """Sync a single transaction using last-write-wins."""
+        local_id = data.get('local_id')
+        server_id = data.get('id')
+        items_data = data.pop('items', [])
+        
+        existing = None
+        if server_id:
+            try:
+                existing = Transaction.objects.get(id=server_id, merchant=merchant)
+            except Transaction.DoesNotExist:
+                pass
+        elif local_id:
+            existing = Transaction.objects.filter(merchant=merchant, local_id=local_id).first()
+        
+        if existing:
+            client_updated = data.get('updated_at')
+            if client_updated and existing.updated_at > client_updated:
+                return {
+                    'conflict': {
+                        'model': 'transaction',
+                        'local_id': local_id,
+                        'server_data': SyncTransactionSerializer(existing).data,
+                        'client_data': data,
+                        'conflict_type': 'update'
+                    }
+                }
+            
+            for key, value in data.items():
+                if key not in ['id', 'merchant', 'created_by', 'created_at']:
+                    setattr(existing, key, value)
+            existing.synced_at = timezone.now()
+            existing.save()
+            
+            # Update items
+            existing.items.all().delete()
+            for item_data in items_data:
+                item_data.pop('id', None)
+                TransactionItem.objects.create(transaction=existing, **item_data)
+        else:
+            data.pop('id', None)
+            data['merchant'] = merchant
+            data['created_by'] = user
+            data['synced_at'] = timezone.now()
+            txn = Transaction.objects.create(**data)
+            
+            for item_data in items_data:
+                item_data.pop('id', None)
+                TransactionItem.objects.create(transaction=txn, **item_data)
+        
+        return {'success': True}
+    
     
