@@ -65,3 +65,59 @@ class SyncPullView(APIView):
         
         return Response(response_data)
 
+
+class SyncPushView(APIView):
+    """
+    Push data to server (সার্ভারে ডাটা পাঠান).
+    Uses last-write-wins for conflict resolution.
+    """
+    
+    permission_classes = [IsAuthenticated]
+    
+    @transaction.atomic
+    def post(self, request):
+        serializer = SyncPushRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        merchant = request.user.get_merchant()
+        conflicts = []
+        synced = {'contacts': 0, 'transactions': 0, 'products': 0}
+        
+        # Sync contacts
+        for contact_data in serializer.validated_data.get('contacts', []):
+            result = self._sync_contact(merchant, contact_data)
+            if result.get('conflict'):
+                conflicts.append(result['conflict'])
+            else:
+                synced['contacts'] += 1
+        
+        # Sync transactions
+        for transaction_data in serializer.validated_data.get('transactions', []):
+            result = self._sync_transaction(merchant, request.user, transaction_data)
+            if result.get('conflict'):
+                conflicts.append(result['conflict'])
+            else:
+                synced['transactions'] += 1
+        
+        # Sync products
+        for product_data in serializer.validated_data.get('products', []):
+            result = self._sync_product(merchant, product_data)
+            if result.get('conflict'):
+                conflicts.append(result['conflict'])
+            else:
+                synced['products'] += 1
+        
+        # Update user's last sync time
+        request.user.last_sync_at = timezone.now()
+        request.user.save(update_fields=['last_sync_at'])
+        
+        return Response({
+            'success': True,
+            'synced_at': timezone.now(),
+            'synced': synced,
+            'conflicts': conflicts,
+            'conflict_count': len(conflicts)
+        })
+    
+   
+
