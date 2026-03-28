@@ -104,3 +104,24 @@ describe('Transaction Management', () => {
             await expect(element(by.id('due-amount'))).toHaveText('৳400');
         });
     });
+
+    describe('Transaction Detail', () => {
+        it('should open transaction detail on tap', async () => {
+            await element(by.id('tab-transactions')).tap();
+
+            // Tap first transaction
+            await element(by.id('transaction-item-0')).tap();
+
+            await expect(element(by.id('transaction-detail-screen'))).toBeVisible();
+        });
+
+        it('should display transaction information', async () => {
+            await element(by.id('tab-transactions')).tap();
+            await element(by.id('transaction-item-0')).tap();
+
+            await expect(element(by.id('transaction-amount'))).toBeVisible();
+            await expect(element(by.id('transaction-date'))).toBeVisible();
+            await expect(element(by.id('transaction-type'))).toBeVisible();
+        });
+    });
+});
