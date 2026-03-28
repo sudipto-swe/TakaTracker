@@ -53,3 +53,68 @@ describe('Contacts Management', () => {
 
             await expect(element(by.id('add-contact-screen'))).toBeVisible();
         });
+
+        it('should add a new customer', async () => {
+            await element(by.id('add-contact-button')).tap();
+
+            // Fill in contact details
+            await element(by.id('contact-name-input')).typeText('টেস্ট গ্রাহক');
+            await element(by.id('contact-phone-input')).typeText('01712345678');
+            await element(by.id('contact-address-input')).typeText('ঢাকা, বাংলাদেশ');
+
+            // Select customer type
+            await element(by.id('type-customer')).tap();
+
+            // Save
+            await element(by.id('save-contact-button')).tap();
+
+            await expect(element(by.text('যোগাযোগ সংরক্ষিত হয়েছে'))).toBeVisible();
+        });
+
+        it('should add a new supplier', async () => {
+            await element(by.id('add-contact-button')).tap();
+
+            await element(by.id('contact-name-input')).typeText('টেস্ট সরবরাহকারী');
+            await element(by.id('contact-phone-input')).typeText('01898765432');
+            await element(by.id('type-supplier')).tap();
+            await element(by.id('save-contact-button')).tap();
+
+            await expect(element(by.text('যোগাযোগ সংরক্ষিত হয়েছে'))).toBeVisible();
+        });
+
+        it('should require name field', async () => {
+            await element(by.id('add-contact-button')).tap();
+            await element(by.id('save-contact-button')).tap();
+
+            await expect(element(by.text('নাম দিন'))).toBeVisible();
+        });
+    });
+
+    describe('Contact Detail', () => {
+        it('should open contact detail on tap', async () => {
+            await element(by.id('contact-item-0')).tap();
+
+            await expect(element(by.id('contact-detail-screen'))).toBeVisible();
+        });
+
+        it('should show contact balance', async () => {
+            await element(by.id('contact-item-0')).tap();
+
+            await expect(element(by.id('contact-balance'))).toBeVisible();
+        });
+
+        it('should show transaction history for contact', async () => {
+            await element(by.id('contact-item-0')).tap();
+
+            await expect(element(by.id('contact-transactions-list'))).toBeVisible();
+        });
+
+        it('should allow adding transaction for contact', async () => {
+            await element(by.id('contact-item-0')).tap();
+            await element(by.id('add-transaction-for-contact')).tap();
+
+            await expect(element(by.id('add-transaction-screen'))).toBeVisible();
+            // Contact should be pre-selected
+        });
+    });
+});
