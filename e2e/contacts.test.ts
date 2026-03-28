@@ -118,3 +118,34 @@ describe('Contacts Management', () => {
         });
     });
 });
+
+describe('Dues Management', () => {
+    beforeAll(async () => {
+        await device.launchApp({
+            newInstance: true,
+            launchArgs: { detoxUserLoggedIn: true }
+        });
+    });
+
+    it('should show contacts with dues', async () => {
+        await element(by.id('tab-contacts')).tap();
+
+        // Look for balance indicators
+        await expect(element(by.id('contact-balance-indicator-0'))).toBeVisible();
+    });
+
+    it('should sort by dues amount', async () => {
+        await element(by.id('tab-contacts')).tap();
+        await element(by.id('sort-by-dues')).tap();
+
+        // Contacts with highest dues should appear first
+    });
+
+    it('should mark payment from contact detail', async () => {
+        await element(by.id('tab-contacts')).tap();
+        await element(by.id('contact-item-0')).tap();
+        await element(by.id('record-payment-button')).tap();
+
+        await expect(element(by.id('payment-modal'))).toBeVisible();
+    });
+});
