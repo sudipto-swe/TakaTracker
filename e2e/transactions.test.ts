@@ -125,3 +125,38 @@ describe('Transaction Management', () => {
         });
     });
 });
+
+describe('Offline Transaction', () => {
+    beforeAll(async () => {
+        await device.launchApp({
+            newInstance: true,
+            launchArgs: { detoxUserLoggedIn: true }
+        });
+    });
+
+    it('should save transaction when offline', async () => {
+        // Put device in airplane mode (simulated)
+        await device.setStatusBar({ networkStatus: 'offline' });
+
+        await element(by.id('tab-add')).tap();
+        await element(by.id('type-sale')).tap();
+        await element(by.id('amount-input')).typeText('500');
+        await element(by.id('save-transaction-button')).tap();
+
+        // Should save locally
+        await expect(element(by.text('লেনদেন সংরক্ষিত হয়েছে'))).toBeVisible();
+
+        // Should show sync pending indicator
+        await expect(element(by.id('sync-pending-badge'))).toBeVisible();
+
+        // Restore network
+        await device.setStatusBar({ networkStatus: 'online' });
+    });
+
+    it('should sync transaction when back online', async () => {
+        // Wait for auto-sync
+        await waitFor(element(by.id('sync-complete-indicator')))
+            .toBeVisible()
+            .withTimeout(10000);
+    });
+});
