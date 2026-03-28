@@ -212,3 +212,136 @@ class BackgroundSyncService {
 
         return { count, errors };
     }
+
+    /**
+     * Pull server changes and merge into local stores.
+     */
+    private async pullServerChanges(): Promise<{ count: number; errors: string[] }> {
+        const errors: string[] = [];
+        let count = 0;
+
+        try {
+            const response = await syncAPI.pull({
+                last_sync_at: this._lastSyncAt || undefined,
+                models: ['contacts', 'transactions', 'products'],
+            });
+
+            if (!response.success || !response.data) {
+                errors.push(`Pull failed: ${response.error}`);
+                return { count, errors };
+            }
+
+            const data = response.data;
+
+            // Merge contacts
+            if (data.contacts && data.contacts.length > 0) {
+                const contactStore = useContactStore.getState();
+                for (const sc of data.contacts) {
+                    const existing = contactStore.contacts.find(
+                        c => c.localId === sc.local_id || c.id === sc.id
+                    );
+                    if (existing) {
+                        contactStore.updateContact(existing.id, {
+                            name: sc.name,
+                            phone: sc.phone,
+                            balance: sc.balance,
+                            isSynced: true,
+                        });
+                    } else {
+                        await contactStore.addContact({
+                            id: sc.id || `server_${Date.now()}`,
+                            localId: sc.local_id || sc.id,
+                            type: sc.contact_type,
+                            name: sc.name,
+                            phone: sc.phone,
+                            address: sc.address,
+                            balance: sc.balance || 0,
+                            creditLimit: sc.credit_limit || 0,
+                            isActive: true,
+                            isSynced: true,
+                        });
+                    }
+                }
+                count += data.contacts.length;
+            }
+
+            // Merge transactions
+            if (data.transactions && data.transactions.length > 0) {
+                const txStore = useTransactionStore.getState();
+                for (const st of data.transactions) {
+                    const existing = txStore.transactions.find(
+                        t => t.localId === st.local_id || t.id === st.id
+                    );
+                    if (!existing) {
+                        txStore.addTransaction({
+                            id: st.id || `server_${Date.now()}_${Math.random()}`,
+                            localId: st.local_id || st.id,
+                            serverId: st.id,
+                            type: st.transaction_type,
+                            referenceNumber: st.reference_number || '',
+                            amount: Number(st.total_amount),
+                            paidAmount: Number(st.paid_amount),
+                            dueAmount: Number(st.total_amount) - Number(st.paid_amount),
+                            discount: Number(st.discount || 0),
+                            notes: st.notes,
+                            paymentMethod: st.payment_mode,
+                            date: new Date(st.transaction_date),
+                            expenseCategory: st.expense_category,
+                            isSynced: true,
+                        });
+                    }
+                }
+                count += data.transactions.length;
+            }
+
+            // Merge products
+            if (data.products && data.products.length > 0) {
+                const invStore = useInventoryStore.getState();
+                for (const sp of data.products) {
+                    const existing = invStore.products.find(
+                        p => p.id === sp.local_id || p.name.toLowerCase() === sp.name?.toLowerCase()
+                    );
+                    if (existing) {
+                        invStore.updateProduct(existing.id, {
+                            stock: Number(sp.stock_quantity),
+                            purchasePrice: Number(sp.purchase_price),
+                            sellingPrice: Number(sp.selling_price),
+                        });
+                    } else {
+                        invStore.addProduct({
+                            id: sp.local_id || `server_${Date.now()}`,
+                            name: sp.name,
+                            sku: sp.sku || '',
+                            stock: Number(sp.stock_quantity || 0),
+                            unit: sp.unit || 'pcs',
+                            purchasePrice: Number(sp.purchase_price || 0),
+                            sellingPrice: Number(sp.selling_price || 0),
+                            lowStock: Number(sp.low_stock_threshold || 10),
+                            category: sp.category || '',
+                            totalSold: 0,
+                            totalRevenue: 0,
+                            totalProfit: 0,
+                            salesCount: 0,
+                        });
+                    }
+                }
+                count += data.products.length;
+            }
+
+            console.log(`[Sync] Pulled ${count} items`);
+        } catch (error) {
+            errors.push(`Pull error: ${(error as Error).message}`);
+        }
+
+        return { count, errors };
+    }
+
+    /**
+     * Get last sync time.
+     */
+    async getLastSyncTime(): Promise<string | null> {
+        return this._lastSyncAt;
+    }
+}
+
+export const backgroundSync = new BackgroundSyncService();
