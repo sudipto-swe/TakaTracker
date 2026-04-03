@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tallykhata_db
+    environment:
+      POSTGRES_DB: tallykhata
+      POSTGRES_USER: tallykhata
+      POSTGRES_PASSWORD: tallykhata_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tallykhata"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: tallykhata_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional: Celery worker for background tasks
+  # celery:
+  #   build: .
+  #   command: celery -A config worker -l info
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   environment:
+  #     - DATABASE_URL=postgresql://tallykhata:tallykhata_dev_password@db:5432/tallykhata
+  #     - REDIS_URL=redis://redis:6379/0
+
+volumes:
+  postgres_data:
+  redis_data:
