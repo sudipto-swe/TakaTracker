@@ -1,6 +1,6 @@
 /**
  * Authentication store using Zustand.
- * Manages user state, tokens, registered users registry, and auth actions.
+ * Manages user state, tokens, registered users registry and auth actions.
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
