@@ -1,5 +1,5 @@
 """
-Payment models for tracking payment gateway transactions.
+Payment models for tracking payment gateway transactions
 """
 from django.db import models
 from django.conf import settings

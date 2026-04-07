@@ -1,5 +1,5 @@
 /**
- * API Client using Axios with JWT authentication.
+ * API Client using Axios with JWT authentication
  */
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
