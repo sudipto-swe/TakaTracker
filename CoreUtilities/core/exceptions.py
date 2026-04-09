@@ -1,5 +1,5 @@
 """
-Custom exception handler for consistent API error responses.
+Custom exception handler for consistent API error responses
 """
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
