@@ -25,7 +25,10 @@ const AddButton: React.FC<{ onPress: () => void }> = ({ onPress }) => (
     </TouchableOpacity>
 );
 
+import { useLanguage } from '../i18n/LanguageContext';
+
 export const MainTabs: React.FC = () => {
+    const { language } = useLanguage();
     const insets = useSafeAreaInsets();
     // Use the system's bottom inset (for gesture bar / nav buttons)
     // Minimum of 4px so there's always a tiny gap
@@ -71,12 +74,12 @@ export const MainTabs: React.FC = () => {
             <Tab.Screen
                 name="Home"
                 component={DashboardScreen}
-                options={{ tabBarLabel: 'হোম' }}
+                options={{ tabBarLabel: t('nav.home', { defaultValue: 'হোম' }) }}
             />
             <Tab.Screen
                 name="Transactions"
                 component={TransactionsScreen}
-                options={{ tabBarLabel: 'লেনদেন' }}
+                options={{ tabBarLabel: t('nav.transactions', { defaultValue: 'লেনদেন' }) }}
             />
             <Tab.Screen
                 name="Add"
@@ -89,12 +92,12 @@ export const MainTabs: React.FC = () => {
             <Tab.Screen
                 name="Contacts"
                 component={ContactsScreen}
-                options={{ tabBarLabel: 'যোগাযোগ' }}
+                options={{ tabBarLabel: t('nav.contacts', { defaultValue: 'যোগাযোগ' }) }}
             />
             <Tab.Screen
                 name="More"
                 component={MoreScreen}
-                options={{ tabBarLabel: 'আরো' }}
+                options={{ tabBarLabel: t('nav.more', { defaultValue: 'আরো' }) }}
             />
         </Tab.Navigator>
     );

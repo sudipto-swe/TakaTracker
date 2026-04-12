@@ -21,6 +21,7 @@ import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../constants/them
 import { t, formatCurrency } from '../../i18n';
 import { useContactStore } from '../../store/contactStore';
 import { RootStackParamList } from '../../navigation/types';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 type AddContactRouteProp = RouteProp<RootStackParamList, 'AddContact'>;
 
@@ -28,6 +29,7 @@ export const AddContactScreen: React.FC = () => {
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const route = useRoute<AddContactRouteProp>();
     const { addContact } = useContactStore();
+    const { language } = useLanguage();
 
     const initialType = route.params?.type || 'customer';
 
@@ -44,15 +46,17 @@ export const AddContactScreen: React.FC = () => {
         const newErrors: Record<string, string> = {};
 
         if (!name.trim()) {
-            newErrors.name = 'নাম দিন';
+            newErrors.name = t('contacts.nameRequired');
         }
 
-        if (phone && !/^01[0-9]{9}$/.test(phone)) {
-            newErrors.phone = 'সঠিক ফোন নম্বর দিন (01XXXXXXXXX)';
+        if (!phone.trim()) {
+            newErrors.phone = t('contacts.phoneRequired');
+        } else if (!/^01[0-9]{9}$/.test(phone)) {
+            newErrors.phone = t('contacts.phoneInvalid');
         }
 
         if (creditLimit && isNaN(Number(creditLimit))) {
-            newErrors.creditLimit = 'সঠিক পরিমাণ দিন';
+            newErrors.creditLimit = t('transactions.errorCorrectAmount');
         }
 
         setErrors(newErrors);
@@ -79,12 +83,12 @@ export const AddContactScreen: React.FC = () => {
             });
 
             Alert.alert(
-                'সফল',
-                'যোগাযোগ সংরক্ষিত হয়েছে',
-                [{ text: 'ঠিক আছে', onPress: () => navigation.goBack() }]
+                t('common.success'),
+                t('contacts.saved'),
+                [{ text: t('common.ok'), onPress: () => navigation.goBack() }]
             );
         } catch (error) {
-            Alert.alert('ত্রুটি', 'যোগাযোগ সংরক্ষণ করা যায়নি');
+            Alert.alert(t('common.error'), t('contacts.saveError'));
         } finally {
             setIsLoading(false);
         }
@@ -93,7 +97,7 @@ export const AddContactScreen: React.FC = () => {
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <Header
-                title={contactType === 'customer' ? 'নতুন গ্রাহক' : 'নতুন সরবরাহকারী'}
+                title={contactType === 'customer' ? t('contacts.addCustomer') : t('contacts.addSupplier')}
                 showBack
             />
 
@@ -104,7 +108,7 @@ export const AddContactScreen: React.FC = () => {
                 <ScrollView showsVerticalScrollIndicator={false}>
                     {/* Contact Type Selection */}
                     <Card style={styles.typeCard}>
-                        <Text style={styles.sectionTitle}>ধরন নির্বাচন করুন</Text>
+                        <Text style={styles.sectionTitle}>{t('contacts.selectType')}</Text>
                         <View style={styles.typeButtons}>
                             <TouchableOpacity
                                 style={[
@@ -120,7 +124,7 @@ export const AddContactScreen: React.FC = () => {
                                         contactType === 'customer' && styles.typeTextActive,
                                     ]}
                                 >
-                                    গ্রাহক
+                                    {t('contacts.customerType')}
                                 </Text>
                             </TouchableOpacity>
 
@@ -138,7 +142,7 @@ export const AddContactScreen: React.FC = () => {
                                         contactType === 'supplier' && styles.typeTextActive,
                                     ]}
                                 >
-                                    সরবরাহকারী
+                                    {t('contacts.supplierType')}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -147,8 +151,8 @@ export const AddContactScreen: React.FC = () => {
                     {/* Contact Details */}
                     <Card style={styles.formCard}>
                         <Input
-                            label="নাম"
-                            placeholder="যোগাযোগের নাম"
+                            label={t('contacts.contactName')}
+                            placeholder={t('contacts.contactNamePlaceholder')}
                             value={name}
                             onChangeText={setName}
                             error={errors.name}
@@ -158,19 +162,20 @@ export const AddContactScreen: React.FC = () => {
                         />
 
                         <Input
-                            label="ফোন নম্বর"
-                            placeholder="01XXXXXXXXX"
+                            label={t('contacts.phone')}
+                            placeholder={t('contacts.phonePlaceholder')}
                             value={phone}
                             onChangeText={setPhone}
                             keyboardType="phone-pad"
                             error={errors.phone}
                             touched={!!errors.phone}
+                            required
                             testID="contact-phone-input"
                         />
 
                         <Input
-                            label="ঠিকানা"
-                            placeholder="ঠিকানা (ঐচ্ছিক)"
+                            label={t('contacts.address')}
+                            placeholder={t('contacts.addressPlaceholder')}
                             value={address}
                             onChangeText={setAddress}
                             multiline
@@ -179,19 +184,19 @@ export const AddContactScreen: React.FC = () => {
                         />
 
                         <Input
-                            label="ক্রেডিট সীমা"
-                            placeholder="০"
+                            label={t('contacts.creditLimit')}
+                            placeholder={t('contacts.creditLimitPlaceholder')}
                             value={creditLimit}
                             onChangeText={setCreditLimit}
                             keyboardType="numeric"
                             error={errors.creditLimit}
                             touched={!!errors.creditLimit}
-                            hint={creditLimit ? `সর্বোচ্চ: ${formatCurrency(Number(creditLimit))}` : undefined}
+                            hint={creditLimit ? t('contacts.creditLimitHint', { amount: formatCurrency(Number(creditLimit)) }) : undefined}
                         />
 
                         <Input
-                            label="নোট"
-                            placeholder="অতিরিক্ত তথ্য (ঐচ্ছিক)"
+                            label={t('transactions.notes')}
+                            placeholder={t('contacts.notesPlaceholder')}
                             value={notes}
                             onChangeText={setNotes}
                             multiline
@@ -203,7 +208,7 @@ export const AddContactScreen: React.FC = () => {
                 {/* Save Button */}
                 <View style={styles.bottomActions}>
                     <Button
-                        title="সংরক্ষণ করুন"
+                        title={t('contacts.saveBtn')}
                         onPress={handleSave}
                         loading={isLoading}
                         disabled={isLoading}

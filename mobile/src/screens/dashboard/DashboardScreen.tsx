@@ -1,5 +1,5 @@
 /**
- * Dashboard Screen - Summary, quick actions, heatmap, and recent transactions.
+ * Dashboard Screen - Summary, quick actions, heatmap, predictions, and recent transactions.
  */
 import React, { useMemo } from 'react';
 import {
@@ -18,7 +18,9 @@ import { useAuthStore } from '../../store/authStore';
 import { useTransactionStore, Transaction, getDailySales, computeAllTimeProfit } from '../../store/transactionStore';
 import { useInventoryStore } from '../../store/inventoryStore';
 import { useSyncStore } from '../../store/syncStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { backgroundSync } from '../../services/syncService';
+import { SmartSuggestionsCard } from '../../components/dashboard/SmartSuggestionsCard';
 import { COLORS, FONT_SIZES, SPACING, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
 import { t, formatCurrency } from '../../i18n';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -177,6 +179,7 @@ export const DashboardScreen: React.FC = () => {
     const { user } = useAuthStore();
     const { transactions, todaySummary } = useTransactionStore();
     const { isOnline, pendingCount } = useSyncStore();
+    const { showPredictions } = useSettingsStore();
 
     const [isRefreshing, setIsRefreshing] = React.useState(false);
 
@@ -364,11 +367,24 @@ export const DashboardScreen: React.FC = () => {
                             color={COLORS.primary}
                             onPress={() => navigation.navigate('Inventory')}
                         />
+                        <QuickActionButton
+                            icon="bulb-outline"
+                            label={t('smart.predictionsBtn')}
+                            color="#8B5CF6"
+                            onPress={() => navigation.navigate('Predictions' as never)}
+                        />
                     </View>
                 </View>
 
                 {/* Heatmap */}
                 <SalesHeatmap dailySales={dailySales} />
+
+                {/* Smart Suggestions */}
+                {showPredictions && (
+                    <SmartSuggestionsCard
+                        onSeeAll={() => navigation.navigate('Predictions' as never)}
+                    />
+                )}
 
                 {/* Dues Summary */}
                 <View style={styles.section}>
@@ -423,6 +439,15 @@ export const DashboardScreen: React.FC = () => {
                     </View>
                 </View>
             </ScrollView>
+
+            {/* Floating ChatBot Button */}
+            <TouchableOpacity
+                style={styles.chatFab}
+                onPress={() => navigation.navigate('ChatBot' as never)}
+                activeOpacity={0.8}
+            >
+                <Ionicons name="chatbubble-ellipses" size={26} color={COLORS.white} />
+            </TouchableOpacity>
         </SafeAreaView>
     );
 };
@@ -580,4 +605,21 @@ const styles = StyleSheet.create({
     lowStockBannerLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
     lowStockBannerTitle: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: '#92400e' },
     lowStockBannerSub: { fontSize: FONT_SIZES.xs, color: '#b45309', marginTop: 2 },
+    chatFab: {
+        position: 'absolute',
+        bottom: 24,
+        right: 20,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: '#7C3AED',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#7C3AED',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.35,
+        shadowRadius: 8,
+        elevation: 8,
+        zIndex: 100,
+    },
 });

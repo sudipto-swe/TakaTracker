@@ -67,7 +67,7 @@ export const ContactsScreen: React.FC = () => {
                 </View>
                 <View style={styles.contactInfo}>
                     <Text style={styles.contactName}>{item.name}</Text>
-                    <Text style={styles.contactPhone}>{item.phone || 'ফোন নেই'}</Text>
+                    <Text style={styles.contactPhone}>{item.phone || t('contacts.noPhone')}</Text>
                 </View>
                 <View style={styles.balanceInfo}>
                     {item.balance !== 0 ? (
@@ -79,11 +79,11 @@ export const ContactsScreen: React.FC = () => {
                                 {formatCurrency(Math.abs(item.balance))}
                             </Text>
                             <Text style={styles.balanceLabel}>
-                                {hasReceivable ? 'পাওনা' : 'দেনা'}
+                                {hasReceivable ? t('contacts.receivable') : t('contacts.payable')}
                             </Text>
                         </>
                     ) : (
-                        <Text style={styles.settledText}>সমতা</Text>
+                        <Text style={styles.settledText}>{t('contacts.settled')}</Text>
                     )}
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={COLORS.gray400} />
@@ -93,9 +93,15 @@ export const ContactsScreen: React.FC = () => {
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
-            {/* Header - NO add button */}
+            {/* Header with add button */}
             <View style={styles.header}>
                 <Text style={styles.title}>{t('contacts.title')}</Text>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('AddContact' as any, { type: activeTab === 'customers' ? 'customer' : 'supplier' })}
+                    style={styles.addButton}
+                >
+                    <Ionicons name="add-circle" size={28} color={COLORS.primary} />
+                </TouchableOpacity>
             </View>
 
             {/* Tab Switcher */}
@@ -133,14 +139,14 @@ export const ContactsScreen: React.FC = () => {
             {/* Dues Summary */}
             <View style={styles.duesSummary}>
                 <View style={styles.dueBox}>
-                    <Text style={styles.dueLabel}>পাওনা আছে</Text>
+                    <Text style={styles.dueLabel}>{t('contacts.receivableTotal')}</Text>
                     <Text style={[styles.dueAmount, { color: COLORS.receivable }]}>
                         {formatCurrency(totalReceivable)}
                     </Text>
                 </View>
                 <View style={styles.dueDivider} />
                 <View style={styles.dueBox}>
-                    <Text style={styles.dueLabel}>দেনা আছে</Text>
+                    <Text style={styles.dueLabel}>{t('contacts.payableTotal')}</Text>
                     <Text style={[styles.dueAmount, { color: COLORS.payable }]}>
                         {formatCurrency(totalPayable)}
                     </Text>
@@ -159,8 +165,8 @@ export const ContactsScreen: React.FC = () => {
                         <Ionicons name="people-outline" size={64} color={COLORS.gray300} />
                         <Text style={styles.emptyText}>
                             {activeTab === 'customers'
-                                ? 'বিক্রয় করলে গ্রাহক স্বয়ংক্রিয়ভাবে যুক্ত হবে'
-                                : 'ক্রয় করলে সরবরাহকারী স্বয়ংক্রিয়ভাবে যুক্ত হবে'}
+                                ? t('contacts.autoAddCustomer')
+                                : t('contacts.autoAddSupplier')}
                         </Text>
                     </View>
                 }
@@ -174,6 +180,9 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md, backgroundColor: COLORS.white,
+    },
+    addButton: {
+        padding: SPACING.xs,
     },
     title: { fontSize: FONT_SIZES.xl, fontWeight: 'bold', color: COLORS.textPrimary },
     tabContainer: {

@@ -57,6 +57,7 @@ export type InventoryStackParamList = {
     ProductDetail: { id: string };
     EditProduct: { id: string };
     LowStock: undefined;
+    BarcodeScanner: undefined;
 };
 
 // Payment Stack
@@ -96,6 +97,8 @@ export type RootStackParamList = {
     AddContact: { type?: 'customer' | 'supplier' };
     ContactDetail: { id: string };
     Notifications: undefined;
+    Predictions: undefined;
+    ChatBot: undefined;
 };
 
 // Helper type for useNavigation hook

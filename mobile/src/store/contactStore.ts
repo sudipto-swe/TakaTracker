@@ -130,11 +130,32 @@ export const useContactStore = create<ContactState>()(
 
             getOrCreateContact: (name, type, phone) => {
                 const state = get();
-                // Find existing contact by name & type
-                const existing = state.contacts.find(
+                // Find existing contact by name & type, or by phone & type
+                let existing = state.contacts.find(
                     c => c.name.toLowerCase() === name.toLowerCase() && c.type === type
                 );
-                if (existing) return existing;
+                if (!existing && phone) {
+                    existing = state.contacts.find(
+                        c => c.phone === phone && c.type === type
+                    );
+                }
+                if (existing) {
+                    // Update phone if contact didn't have one
+                    if (phone && !existing.phone) {
+                        const updateInArray = (arr: Contact[]) => {
+                            const idx = arr.findIndex(c => c.id === existing!.id);
+                            if (idx !== -1) arr[idx].phone = phone;
+                        };
+                        set(
+                            produce((state: ContactState) => {
+                                updateInArray(state.contacts);
+                                updateInArray(state.customers);
+                                updateInArray(state.suppliers);
+                            })
+                        );
+                    }
+                    return existing;
+                }
 
                 // Create new contact
                 const localId = `contact_${Date.now()}_${Math.random().toString(36).slice(2)}`;
