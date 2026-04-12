@@ -17,6 +17,7 @@
     "submit:android": "eas submit --platform android"
   },
   "dependencies": {
+    "@casl/ability": "^6.8.0",
     "@hookform/resolvers": "^3.3.4",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "11.4.1",
@@ -25,6 +26,8 @@
     "@react-navigation/stack": "^6.3.29",
     "axios": "^1.6.7",
     "expo": "~54.0.0",
+    "expo-camera": "~17.0.10",
+    "expo-image-picker": "~17.0.10",
     "expo-linear-gradient": "~15.0.8",
     "expo-secure-store": "~15.0.8",
     "expo-status-bar": "~3.0.9",
