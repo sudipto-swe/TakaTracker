@@ -12,6 +12,9 @@ import {
     TextInput,
     Alert,
     Modal,
+    ScrollView,
+    KeyboardAvoidingView,
+    Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,11 +24,12 @@ import { useInventoryStore, Product } from '../../store/inventoryStore';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { COLORS, FONT_SIZES, SPACING, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
 import { t, formatCurrency } from '../../i18n';
+import { BarcodeScannerModal } from '../../components/common/BarcodeScannerModal';
 
 export const InventoryScreen: React.FC = () => {
     const navigation = useNavigation();
     const { language } = useLanguage();
-    const { products, updateSellingPrice, setLowStockThreshold } = useInventoryStore();
+    const { products, updateSellingPrice, setLowStockThreshold, addProduct } = useInventoryStore();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('all');
 
@@ -38,6 +42,61 @@ export const InventoryScreen: React.FC = () => {
     const [showThresholdModal, setShowThresholdModal] = useState(false);
     const [thresholdProduct, setThresholdProduct] = useState<Product | null>(null);
     const [newThreshold, setNewThreshold] = useState('');
+
+    // Add product modal
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [addName, setAddName] = useState('');
+    const [addSku, setAddSku] = useState('');
+    const [addCategory, setAddCategory] = useState('');
+    const [addStock, setAddStock] = useState('0');
+    const [addUnit, setAddUnit] = useState('পিস');
+    const [addPurchasePrice, setAddPurchasePrice] = useState('');
+    const [addSellingPrice, setAddSellingPrice] = useState('');
+    const [addLowStock, setAddLowStock] = useState('10');
+
+    // Barcode Scanner
+    const [showScanner, setShowScanner] = useState(false);
+
+    const handleBarcodeScanned = (barcode: string, type: string) => {
+        setShowScanner(false);
+        setAddSku(barcode);
+    };
+
+    const handleSaveNewProduct = () => {
+        if (!addName.trim() || !addPurchasePrice || !addSellingPrice) {
+            Alert.alert(t('common.error'), t('inventory.errorNamePrice'));
+            return;
+        }
+
+        const generatedSku = addSku.trim() || `SKU-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
+
+        const newProduct: Product = {
+            id: `prod_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            name: addName.trim(),
+            sku: generatedSku,
+            stock: parseInt(addStock) || 0,
+            unit: addUnit.trim() || 'পিস',
+            purchasePrice: parseFloat(addPurchasePrice) || 0,
+            sellingPrice: parseFloat(addSellingPrice) || 0,
+            lowStock: parseInt(addLowStock) || 10,
+            category: addCategory.trim() || 'অন্যান্য',
+            totalSold: 0,
+            totalRevenue: 0,
+            totalProfit: 0,
+            salesCount: 0,
+        };
+
+        addProduct(newProduct);
+        setShowAddModal(false);
+        setAddName('');
+        setAddSku('');
+        setAddPurchasePrice('');
+        setAddSellingPrice('');
+        setAddStock('0');
+        setAddCategory('');
+
+        Alert.alert('✅', t('inventory.productSaved'));
+    };
 
     const getStockStatus = (stock: number, lowStock: number) => {
         if (stock === 0) return { label: t('inventory.outOfStock'), color: COLORS.error };
@@ -171,13 +230,15 @@ export const InventoryScreen: React.FC = () => {
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
-            {/* Header - NO add button */}
+            {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Ionicons name="arrow-back" size={24} color={COLORS.textPrimary} />
                 </TouchableOpacity>
                 <Text style={styles.title}>{t('inventory.title')}</Text>
-                <View style={{ width: 24 }} />
+                <TouchableOpacity onPress={() => setShowAddModal(true)}>
+                    <Ionicons name="add-circle" size={28} color={COLORS.primary} />
+                </TouchableOpacity>
             </View>
 
             {/* Stock Summary */}
@@ -349,6 +410,73 @@ export const InventoryScreen: React.FC = () => {
                     </View>
                 </View>
             </Modal>
+
+            <BarcodeScannerModal
+                visible={showScanner}
+                onClose={() => setShowScanner(false)}
+                onBarcodeScanned={handleBarcodeScanned}
+                onPhotoTaken={(uri) => setShowScanner(false)}
+            />
+
+            {/* Add Product Modal */}
+            <Modal visible={showAddModal} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <KeyboardAvoidingView style={styles.addProductModalContent} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>{t('inventory.addNewProduct')}</Text>
+                            <TouchableOpacity onPress={() => setShowAddModal(false)}>
+                                <Ionicons name="close" size={24} color={COLORS.textPrimary} />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            <Text style={styles.sectionLabel}>{t('inventory.productNameRequired')}</Text>
+                            <TextInput style={styles.formInput} value={addName} onChangeText={setAddName} placeholder={t('inventory.productName')} />
+                            
+                            <Text style={styles.sectionLabel}>{t('inventory.skuLabel')}</Text>
+                            <View style={styles.scanPickRow}>
+                                <TextInput style={[styles.formInput, { flex: 1, marginBottom: 0 }]} value={addSku} onChangeText={setAddSku} placeholder="..." />
+                                <TouchableOpacity style={styles.scanBtnMini} onPress={() => setShowScanner(true)}>
+                                    <Ionicons name="scan" size={20} color={COLORS.white} />
+                                    <Text style={styles.scanBtnMiniText}>{t('inventory.scanToFill')}</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <Text style={styles.sectionLabel}>{t('inventory.category')}</Text>
+                            <TextInput style={styles.formInput} value={addCategory} onChangeText={setAddCategory} placeholder="ক্যাটাগরি" />
+                            
+                            <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.sectionLabel}>{t('inventory.purchasePrice')} *</Text>
+                                    <TextInput style={styles.formInput} value={addPurchasePrice} onChangeText={setAddPurchasePrice} keyboardType="numeric" placeholder="0" />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.sectionLabel}>{t('inventory.sellingPriceRequired')}</Text>
+                                    <TextInput style={styles.formInput} value={addSellingPrice} onChangeText={setAddSellingPrice} keyboardType="numeric" placeholder="0" />
+                                </View>
+                            </View>
+
+                            <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.sectionLabel}>{t('inventory.initialStock')}</Text>
+                                    <TextInput style={styles.formInput} value={addStock} onChangeText={setAddStock} keyboardType="numeric" />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.sectionLabel}>{t('inventory.unit')}</Text>
+                                    <TextInput style={styles.formInput} value={addUnit} onChangeText={setAddUnit} placeholder="পিস" />
+                                </View>
+                            </View>
+
+                            <Text style={styles.sectionLabel}>{t('inventory.lowStockThreshold')}</Text>
+                            <TextInput style={styles.formInput} value={addLowStock} onChangeText={setAddLowStock} keyboardType="numeric" />
+
+                            <TouchableOpacity style={styles.saveProductBtn} onPress={handleSaveNewProduct}>
+                                <Text style={styles.saveProductBtnText}>{t('inventory.saveProduct')}</Text>
+                            </TouchableOpacity>
+                            <View style={{ height: 20 }} />
+                        </ScrollView>
+                    </KeyboardAvoidingView>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -477,4 +605,29 @@ const styles = StyleSheet.create({
         backgroundColor: '#fef3c7', borderRadius: BORDER_RADIUS.full,
     },
     thresholdText: { fontSize: FONT_SIZES.xs, color: '#92400e', fontWeight: '500' },
+    addProductModalContent: {
+        backgroundColor: COLORS.white, borderTopLeftRadius: BORDER_RADIUS.xl,
+        borderTopRightRadius: BORDER_RADIUS.xl, padding: SPACING.lg,
+        width: '100%', maxHeight: '85%',
+    },
+    formInput: {
+        backgroundColor: COLORS.background, borderRadius: BORDER_RADIUS.md,
+        paddingHorizontal: SPACING.md, paddingVertical: SPACING.md,
+        borderWidth: 1, borderColor: COLORS.gray200, marginBottom: SPACING.md,
+        fontSize: FONT_SIZES.base, color: COLORS.textPrimary,
+    },
+    scanPickRow: {
+        flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.md, alignItems: 'center',
+    },
+    scanBtnMini: {
+        flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
+        backgroundColor: COLORS.primary, paddingHorizontal: SPACING.md,
+        paddingVertical: 14, borderRadius: BORDER_RADIUS.md,
+    },
+    scanBtnMiniText: { color: COLORS.white, fontSize: FONT_SIZES.sm, fontWeight: '600' },
+    saveProductBtn: {
+        backgroundColor: COLORS.primary, paddingVertical: SPACING.md,
+        borderRadius: BORDER_RADIUS.md, alignItems: 'center', marginTop: SPACING.md,
+    },
+    saveProductBtnText: { color: COLORS.white, fontSize: FONT_SIZES.md, fontWeight: '600' },
 });

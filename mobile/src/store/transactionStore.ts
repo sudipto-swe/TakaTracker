@@ -43,6 +43,7 @@ export interface Transaction {
     discount: number;
     notes?: string;
     paymentMethod?: 'cash' | 'bkash' | 'nagad' | 'rocket' | 'bank';
+    receiptImage?: string;
     date: Date;
     isSynced: boolean;
     syncedAt?: number;
