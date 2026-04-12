@@ -75,10 +75,13 @@ export const TransactionsScreen: React.FC = () => {
     const getDateString = (date: Date) => {
         try {
             const d = new Date(date);
-            return d.toLocaleDateString('bn-BD', {
+            return d.toLocaleString(language === 'en' ? 'en-US' : 'bn-BD', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
             });
         } catch {
             return '';

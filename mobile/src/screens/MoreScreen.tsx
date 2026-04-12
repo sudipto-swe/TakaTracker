@@ -1,5 +1,5 @@
 /**
- * More Screen - Settings and additional features.
+ * More Screen - Settings and additional features with RBAC guards.
  */
 import React, { useState } from 'react';
 import {
@@ -22,6 +22,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../store/authStore';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useSyncStore } from '../store/syncStore';
+import { useSettingsStore } from '../store/settingsStore';
+import { Can, useCan } from '../rbac';
 import { COLORS, FONT_SIZES, SPACING, BORDER_RADIUS, SHADOWS } from '../constants/theme';
 import { t } from '../i18n';
 
@@ -58,15 +60,47 @@ const MenuItem: React.FC<MenuItemProps> = ({
     </TouchableOpacity>
 );
 
+/** Small role badge displayed next to the user's name */
+const RoleBadge: React.FC<{ role: string }> = ({ role }) => {
+    const badgeColors: Record<string, string> = {
+        merchant: COLORS.primary,
+        staff: COLORS.warning,
+        admin: COLORS.success,
+    };
+    const badgeLabels: Record<string, string> = {
+        merchant: t('auth.merchant', { defaultValue: 'Merchant' }),
+        staff: t('auth.staff', { defaultValue: 'Staff' }),
+        admin: t('auth.admin', { defaultValue: 'Admin' }),
+    };
+    return (
+        <View style={[styles.roleBadge, { backgroundColor: (badgeColors[role] || COLORS.gray400) + '20' }]}>
+            <Text style={[styles.roleBadgeText, { color: badgeColors[role] || COLORS.gray400 }]}>
+                {badgeLabels[role] || role}
+            </Text>
+        </View>
+    );
+};
+
 export const MoreScreen: React.FC = () => {
     const navigation = useNavigation<any>();
     const { user, logout, updateUser } = useAuthStore();
     const { language, changeLanguage } = useLanguage();
     const { isOnline, isSyncing, lastSyncAt, pendingCount, setSyncing, setLastSync } = useSyncStore();
+    const {
+        voiceModeEnabled, setVoiceMode,
+        conversationTrackingEnabled, setConversationTracking,
+        showPredictions, setShowPredictions,
+        showComboOffers, setShowComboOffers,
+    } = useSettingsStore();
 
     // Business name editing modal state
     const [showBusinessNameModal, setShowBusinessNameModal] = useState(false);
     const [businessNameInput, setBusinessNameInput] = useState(user?.businessName || '');
+
+    // RBAC permission checks
+    const canViewReports = useCan('view', 'reports');
+    const canManagePayments = useCan('manage', 'payments');
+    const canManageSettings = useCan('manage', 'settings');
 
     const handleLanguageToggle = () => {
         changeLanguage(language === 'bn' ? 'en' : 'bn');
@@ -142,42 +176,131 @@ export const MoreScreen: React.FC = () => {
                             </Text>
                         </View>
                         <View style={styles.profileInfo}>
-                            <Text style={styles.profileName}>
-                                {user?.businessName || user?.name || t('auth.businessName')}
-                            </Text>
+                            <View style={styles.profileNameRow}>
+                                <Text style={styles.profileName}>
+                                    {user?.businessName || user?.name || t('auth.businessName')}
+                                </Text>
+                                {user?.role && <RoleBadge role={user.role} />}
+                            </View>
                             <Text style={styles.profilePhone}>+88{user?.phone || '01XXXXXXXXX'}</Text>
                         </View>
                         <Ionicons name="chevron-forward" size={20} color={COLORS.gray400} />
                     </TouchableOpacity>
                 </View>
 
-                {/* Business Features */}
+                {/* Business Features — Permission Guarded */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>{t('more.title')}</Text>
                     <View style={styles.menuGroup}>
+                        {/* Inventory: visible to anyone with view:inventory */}
+                        <Can action="view" subject="inventory">
+                            <MenuItem
+                                icon="cube-outline"
+                                label={t('inventory.title')}
+                                sublabel={t('more.inventorySub')}
+                                onPress={() => navigation.navigate('Inventory')}
+                            />
+                        </Can>
+
+                        {/* Reports: only for users with view:reports */}
+                        <Can action="view" subject="reports">
+                            <MenuItem
+                                icon="stats-chart-outline"
+                                label={t('reports.title')}
+                                sublabel={t('more.reportsSub')}
+                                onPress={() => navigation.navigate('Reports')}
+                            />
+                        </Can>
+
+                        {/* QR Payments: only for users with manage:payments */}
+                        <Can action="manage" subject="payments">
+                            <MenuItem
+                                icon="qr-code-outline"
+                                label={t('payments.qrPayment')}
+                                sublabel={t('more.qrSub')}
+                                onPress={() => navigation.navigate('QRPayment')}
+                            />
+                        </Can>
+
+                        {/* Notifications: visible to all */}
+                        <Can action="view" subject="notifications">
+                            <MenuItem
+                                icon="notifications-outline"
+                                label={t('more.notificationsTitle', { defaultValue: 'Dues Notifications' })}
+                                sublabel={t('more.notificationsSub', { defaultValue: 'View detailed list of customers with dues' })}
+                                onPress={() => navigation.navigate('Notifications')}
+                            />
+                        </Can>
+                    </View>
+                </View>
+
+                {/* Smart Features */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>{t('smart.smartFeatures')}</Text>
+                    <View style={styles.menuGroup}>
                         <MenuItem
-                            icon="cube-outline"
-                            label={t('inventory.title')}
-                            sublabel={t('more.inventorySub')}
-                            onPress={() => navigation.navigate('Inventory')}
+                            icon="chatbubble-ellipses-outline"
+                            label={t('chatbot.menuTitle')}
+                            sublabel={t('chatbot.menuSub')}
+                            onPress={() => navigation.navigate('ChatBot' as never)}
                         />
                         <MenuItem
-                            icon="stats-chart-outline"
-                            label={t('reports.title')}
-                            sublabel={t('more.reportsSub')}
-                            onPress={() => navigation.navigate('Reports')}
+                            icon="mic-outline"
+                            label={t('smart.voiceMode')}
+                            sublabel={t('smart.voiceModeSub')}
+                            showArrow={false}
+                            rightElement={
+                                <Switch
+                                    value={voiceModeEnabled}
+                                    onValueChange={setVoiceMode}
+                                    trackColor={{ true: COLORS.accent, false: COLORS.gray300 }}
+                                />
+                            }
                         />
                         <MenuItem
-                            icon="qr-code-outline"
-                            label={t('payments.qrPayment')}
-                            sublabel={t('more.qrSub')}
-                            onPress={() => navigation.navigate('QRPayment')}
+                            icon="chatbubbles-outline"
+                            label={t('smart.conversationTracking')}
+                            sublabel={t('smart.conversationTrackingSub')}
+                            showArrow={false}
+                            rightElement={
+                                <Switch
+                                    value={conversationTrackingEnabled}
+                                    onValueChange={setConversationTracking}
+                                    trackColor={{ true: COLORS.accent, false: COLORS.gray300 }}
+                                />
+                            }
                         />
                         <MenuItem
-                            icon="notifications-outline"
-                            label="বাকির নোটিফিকেশন"
-                            sublabel="বাকিদারদের বিস্তারিত তালিকা দেখুন"
-                            onPress={() => navigation.navigate('Notifications')}
+                            icon="bulb-outline"
+                            label={t('smart.smartSuggestions')}
+                            sublabel={t('smart.smartSuggestionsSub')}
+                            showArrow={false}
+                            rightElement={
+                                <Switch
+                                    value={showPredictions}
+                                    onValueChange={setShowPredictions}
+                                    trackColor={{ true: '#8B5CF6', false: COLORS.gray300 }}
+                                />
+                            }
+                        />
+                        <MenuItem
+                            icon="pricetags-outline"
+                            label={t('smart.comboOffers')}
+                            sublabel={t('smart.comboOffersSub')}
+                            showArrow={false}
+                            rightElement={
+                                <Switch
+                                    value={showComboOffers}
+                                    onValueChange={setShowComboOffers}
+                                    trackColor={{ true: COLORS.success, false: COLORS.gray300 }}
+                                />
+                            }
+                        />
+                        <MenuItem
+                            icon="analytics-outline"
+                            label={t('smart.viewDetailedPredictions')}
+                            sublabel={t('smart.viewDetailedPredictionsSub')}
+                            onPress={() => navigation.navigate('Predictions' as never)}
                         />
                     </View>
                 </View>
@@ -222,7 +345,7 @@ export const MoreScreen: React.FC = () => {
                     </View>
                 </View>
 
-                {/* Settings */}
+                {/* Settings — some items permission-guarded */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>{t('settings.title')}</Text>
                     <View style={styles.menuGroup}>
@@ -244,11 +367,13 @@ export const MoreScreen: React.FC = () => {
                             label={t('settings.notifications')}
                             onPress={handleNotifications}
                         />
-                        <MenuItem
-                            icon="shield-checkmark-outline"
-                            label={t('settings.security')}
-                            onPress={handleSecurity}
-                        />
+                        <Can action="manage" subject="settings">
+                            <MenuItem
+                                icon="shield-checkmark-outline"
+                                label={t('settings.security')}
+                                onPress={handleSecurity}
+                            />
+                        </Can>
                     </View>
                 </View>
 
@@ -377,10 +502,24 @@ const styles = StyleSheet.create({
     profileInfo: {
         flex: 1,
     },
+    profileNameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
     profileName: {
         fontSize: FONT_SIZES.md,
         fontWeight: '600',
         color: COLORS.textPrimary,
+    },
+    roleBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 10,
+    },
+    roleBadgeText: {
+        fontSize: FONT_SIZES.xs,
+        fontWeight: '600',
     },
     profilePhone: {
         fontSize: FONT_SIZES.sm,

@@ -1,5 +1,5 @@
 /**
- * Authentication API service.
+ * Authentication API service with RBAC support.
  */
 import apiClient, { ApiResponse, setAuthToken, clearAuthToken } from './client';
 
@@ -18,6 +18,12 @@ interface OTPVerifyResponse {
         name: string;
         business_name: string;
         role: string;
+        rbac_role_info: {
+            name: string;
+            display_name: string;
+            display_name_bn: string;
+        };
+        permissions: string[];
         language: string;
         is_verified: boolean;
     };
@@ -32,7 +38,23 @@ interface UserProfile {
     address: string;
     profile_image: string;
     role: string;
+    rbac_role_info: {
+        name: string;
+        display_name: string;
+        display_name_bn: string;
+    };
+    permissions: string[];
     language: string;
+}
+
+interface PermissionsResponse {
+    success: boolean;
+    role: {
+        name: string;
+        display_name: string;
+        display_name_bn?: string;
+    };
+    permissions: string[];
 }
 
 export const authService = {
@@ -52,7 +74,7 @@ export const authService = {
     },
 
     /**
-     * Verify OTP and get tokens.
+     * Verify OTP and get tokens + permissions.
      */
     verifyOTP: async (phone: string, otp: string): Promise<ApiResponse<OTPVerifyResponse>> => {
         try {
@@ -97,7 +119,7 @@ export const authService = {
     },
 
     /**
-     * Get current user profile.
+     * Get current user profile (includes permissions).
      */
     getProfile: async (): Promise<ApiResponse<UserProfile>> => {
         try {
@@ -127,6 +149,21 @@ export const authService = {
     },
 
     /**
+     * Fetch current user's RBAC permissions.
+     */
+    getPermissions: async (): Promise<ApiResponse<PermissionsResponse>> => {
+        try {
+            const response = await apiClient.get('/users/profile/permissions/');
+            return { success: true, data: response.data };
+        } catch (error: any) {
+            return {
+                success: false,
+                error: error.response?.data?.error || 'Failed to get permissions',
+            };
+        }
+    },
+
+    /**
      * Change app language.
      */
     changeLanguage: async (language: 'bn' | 'en'): Promise<ApiResponse<any>> => {
@@ -148,3 +185,4 @@ export const authService = {
         await clearAuthToken();
     },
 };
+
